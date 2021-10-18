@@ -2,13 +2,15 @@ use std::cmp::Ordering;
 use std::fmt;
 use std::hash::{Hash, Hasher};
 
+use serde::{Deserialize, Serialize};
+
 use crate::pretty::codec::Codec;
 use crate::pretty::prettifier::IdPrettifier;
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct Id {
     snowflake: i64,
-    pretty: String,
+    pretty: String, // todo: convert into [char; N] form to support Cpy semantics
 }
 
 impl Id {
