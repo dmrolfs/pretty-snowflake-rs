@@ -1,19 +1,10 @@
-# pretty-snowflake
+use claim::*;
+use pretty_assertions::assert_eq;
+use pretty_snowflake::{Alphabet, AlphabetCodec, IdPrettifier, PrettyIdGenerator, RealTimeGenerator};
+use regex::Regex;
 
-Rust port of [SoftwareMill/scala-id-generator](https://github.com/softwaremill/scala-id-generator/blob/master/README.md).
-
-Generate unique ids. A default generator is provided, based on 
-[Twitter Snowflake](https://github.com/twitter/snowflake), which generates time-based ids. 
-Besides that library provide `IdPrettifier` which may convert `i64` into user-friendly Id type that 
-can be coerced into an i64 for systematic usage and storage and as a human-readable string, such as 
-`HPJD-72036-HAPK-58077`. 
-
-`IdPrettifier` preserves the id's monotonicity, provides checksum and produces id with constant 
-length (if it's not configured otherwise). It also maybe configured to user custom part sizes, 
-separator or don't use leading zeros to provide fixed length. 
-
-Examples
-```rust
+#[test]
+fn test_present_example_of_usage() {
     // create instance of it
     let mut generator = PrettyIdGenerator::<RealTimeGenerator, AlphabetCodec>::single_node(IdPrettifier::default());
 
@@ -47,4 +38,4 @@ Examples
     };
     let custom_id = custom_prettifier.prettify(1234567);
     assert_eq!(&custom_id, "BCAACAB_5671");
-```
+}
