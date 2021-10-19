@@ -17,6 +17,10 @@ impl Id {
     pub fn new<C: Codec>(snowflake: i64, prettifier: &IdPrettifier<C>) -> Self {
         Self { snowflake, pretty: prettifier.prettify(snowflake) }
     }
+
+    pub fn direct(snowflake: i64, pretty: impl Into<String>) -> Self {
+        Self { snowflake, pretty: pretty.into(), }
+    }
 }
 
 impl fmt::Display for Id {
