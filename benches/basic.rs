@@ -36,7 +36,6 @@ fn bench_generate_lazy_snowflake(b: &mut Bencher) {
     b.iter(|| generator.next_id());
 }
 
-
 #[bench]
 fn bench_generate_lazy_pretty(b: &mut Bencher) {
     let mut generator = PrettyIdGenerator::<LazyGenerator, AlphabetCodec>::default();

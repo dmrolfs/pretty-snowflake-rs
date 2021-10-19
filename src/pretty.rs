@@ -7,7 +7,7 @@ pub use codec::{Alphabet, AlphabetCodec, Codec};
 pub use id::Id;
 pub use prettifier::IdPrettifier;
 
-use crate::{IdGenerator, SnowflakeIdGenerator};
+use crate::{DatacenterWorker, IdGenerator, SnowflakeIdGenerator};
 
 #[derive(Debug, Clone)]
 pub struct PrettyIdGenerator<G: IdGenerator, C: Codec> {
@@ -34,9 +34,9 @@ impl<G: IdGenerator, C: Codec> PrettyIdGenerator<G, C> {
         Self { generator, prettifier }
     }
 
-    pub fn distributed(worker_id: i32, datacenter_id: i32, prettifier: IdPrettifier<C>) -> Self {
+    pub fn distributed(datacenter_worker: DatacenterWorker, prettifier: IdPrettifier<C>) -> Self {
         Self {
-            generator: SnowflakeIdGenerator::<G>::distributed(worker_id, datacenter_id),
+            generator: SnowflakeIdGenerator::<G>::distributed(datacenter_worker),
             prettifier,
         }
     }

@@ -12,6 +12,7 @@ lazy_static = "1.4"
 serde = { version = "1", features = ["derive"] }
 tailcall = "0.1"
 thiserror = "1"
+validator = { version = "0.14", features = ["derive"] }
 
 [dev-dependencies]
 pretty_assertions = "1"

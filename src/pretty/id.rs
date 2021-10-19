@@ -19,7 +19,7 @@ impl Id {
     }
 
     pub fn direct(snowflake: i64, pretty: impl Into<String>) -> Self {
-        Self { snowflake, pretty: pretty.into(), }
+        Self { snowflake, pretty: pretty.into() }
     }
 }
 

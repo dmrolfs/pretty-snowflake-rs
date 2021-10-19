@@ -219,7 +219,6 @@ mod tests {
             vec!["0".to_string(), "0".to_string(), "0".to_string(), "1007".to_string(),]
         );
 
-
         let actual = prettifier.add_leading_zeros_parts(vec![
             "8242".to_string(),
             "27036".to_string(),

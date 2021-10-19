@@ -2,6 +2,7 @@ use std::cmp::Ordering;
 use std::hash::{Hash, Hasher};
 use std::marker::PhantomData;
 
+use crate::DatacenterWorker;
 use snowflake::SnowflakeIdGenerator as Worker;
 
 pub trait IdGenerator {
@@ -38,39 +39,27 @@ impl IdGenerator for LazyGenerator {
 /// Generates time-based unique ids. Each node should have a different workerId.
 #[derive(Debug, Clone)]
 pub struct SnowflakeIdGenerator<G> {
-    worker_id: i32,
-    datacenter_id: i32,
+    datacenter_worker: DatacenterWorker,
     worker: Worker,
     marker: PhantomData<G>,
 }
 
 impl<G> Default for SnowflakeIdGenerator<G> {
     fn default() -> Self {
-        let worker_id = 1;
-        let datacenter_id = 1;
-        let worker = Worker::new(datacenter_id, worker_id);
-        Self {
-            worker_id,
-            datacenter_id,
-            worker,
-            marker: PhantomData,
-        }
+        let datacenter_worker = DatacenterWorker::default();
+        let worker = Worker::new(datacenter_worker.datacenter_id, datacenter_worker.worker_id);
+        Self { datacenter_worker, worker, marker: PhantomData }
     }
 }
 
 impl<G: IdGenerator> SnowflakeIdGenerator<G> {
     pub fn single_node() -> Self {
-        Self::distributed(1, 1)
+        Self::distributed(DatacenterWorker::default())
     }
 
-    pub fn distributed(worker_id: i32, datacenter_id: i32) -> Self {
-        let worker = Worker::new(datacenter_id, worker_id);
-        Self {
-            worker_id,
-            datacenter_id,
-            worker,
-            marker: PhantomData,
-        }
+    pub fn distributed(datacenter_worker: DatacenterWorker) -> Self {
+        let worker = Worker::new(datacenter_worker.datacenter_id, datacenter_worker.worker_id);
+        Self { datacenter_worker, worker, marker: PhantomData }
     }
 
     pub fn next_id(&mut self) -> i64 {
@@ -80,7 +69,7 @@ impl<G: IdGenerator> SnowflakeIdGenerator<G> {
 
 impl<G> PartialEq for SnowflakeIdGenerator<G> {
     fn eq(&self, other: &Self) -> bool {
-        self.datacenter_id == other.datacenter_id && self.worker_id == other.worker_id
+        self.datacenter_worker == other.datacenter_worker
     }
 }
 
@@ -88,10 +77,7 @@ impl<G> Eq for SnowflakeIdGenerator<G> {}
 
 impl<G> Ord for SnowflakeIdGenerator<G> {
     fn cmp(&self, other: &Self) -> Ordering {
-        match self.datacenter_id.cmp(&other.datacenter_id) {
-            Ordering::Equal => self.worker_id.cmp(&other.worker_id),
-            o => o,
-        }
+        self.datacenter_worker.cmp(&other.datacenter_worker)
     }
 }
 
@@ -103,7 +89,6 @@ impl<G> PartialOrd for SnowflakeIdGenerator<G> {
 
 impl<G> Hash for SnowflakeIdGenerator<G> {
     fn hash<H: Hasher>(&self, state: &mut H) {
-        self.datacenter_id.hash(state);
-        self.worker_id.hash(state);
+        self.datacenter_worker.hash(state);
     }
 }
