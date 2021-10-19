@@ -9,13 +9,13 @@ pub trait IdGenerator {
     fn next_id(worker: &mut Worker) -> i64;
 }
 
-#[derive(Debug, Default)]
+#[derive(Debug, Default, Copy, Clone)]
 pub struct RealTimeGenerator;
 
-#[derive(Debug, Default)]
+#[derive(Debug, Default, Copy, Clone)]
 pub struct Generator;
 
-#[derive(Debug, Default)]
+#[derive(Debug, Default, Copy, Clone)]
 pub struct LazyGenerator;
 
 impl IdGenerator for RealTimeGenerator {
