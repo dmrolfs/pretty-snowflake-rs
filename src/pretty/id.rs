@@ -66,3 +66,22 @@ impl Hash for Id {
         self.snowflake.hash(state);
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use pretty_assertions::assert_eq;
+    use super::*;
+    use crate::{PrettyIdGenerator, IdPrettifier, AlphabetCodec, RealTimeGenerator};
+
+    fn make_generator() -> PrettyIdGenerator<RealTimeGenerator, AlphabetCodec> {
+        PrettyIdGenerator::single_node(IdPrettifier::<AlphabetCodec>::default())
+    }
+
+    #[test]
+    fn test_partial_ord() {
+        let mut generator = make_generator();
+        let a = generator.next_id();
+        let b = generator.next_id();
+        assert!(a < b);
+    }
+}
