@@ -2,7 +2,7 @@ use std::cmp::Ordering;
 use std::hash::{Hash, Hasher};
 use std::marker::PhantomData;
 
-use crate::DatacenterWorker;
+use crate::MachineNode;
 use snowflake::SnowflakeIdGenerator as Worker;
 
 pub trait IdGenerator {
@@ -39,27 +39,27 @@ impl IdGenerator for LazyGenerator {
 /// Generates time-based unique ids. Each node should have a different workerId.
 #[derive(Debug, Clone)]
 pub struct SnowflakeIdGenerator<G> {
-    datacenter_worker: DatacenterWorker,
+    machine_node: MachineNode,
     worker: Worker,
     marker: PhantomData<G>,
 }
 
 impl<G> Default for SnowflakeIdGenerator<G> {
     fn default() -> Self {
-        let datacenter_worker = DatacenterWorker::default();
-        let worker = Worker::new(datacenter_worker.datacenter_id, datacenter_worker.worker_id);
-        Self { datacenter_worker, worker, marker: PhantomData }
+        let machine_node = MachineNode::default();
+        let worker = Worker::new(machine_node.machine_id, machine_node.node_id);
+        Self { machine_node, worker, marker: PhantomData }
     }
 }
 
 impl<G: IdGenerator> SnowflakeIdGenerator<G> {
     pub fn single_node() -> Self {
-        Self::distributed(DatacenterWorker::default())
+        Self::distributed(MachineNode::default())
     }
 
-    pub fn distributed(datacenter_worker: DatacenterWorker) -> Self {
-        let worker = Worker::new(datacenter_worker.datacenter_id, datacenter_worker.worker_id);
-        Self { datacenter_worker, worker, marker: PhantomData }
+    pub fn distributed(machine_node: MachineNode) -> Self {
+        let worker = Worker::new(machine_node.machine_id, machine_node.node_id);
+        Self { machine_node, worker, marker: PhantomData }
     }
 
     pub fn next_id(&mut self) -> i64 {
@@ -69,7 +69,7 @@ impl<G: IdGenerator> SnowflakeIdGenerator<G> {
 
 impl<G> PartialEq for SnowflakeIdGenerator<G> {
     fn eq(&self, other: &Self) -> bool {
-        self.datacenter_worker == other.datacenter_worker
+        self.machine_node == other.machine_node
     }
 }
 
@@ -77,7 +77,7 @@ impl<G> Eq for SnowflakeIdGenerator<G> {}
 
 impl<G> Ord for SnowflakeIdGenerator<G> {
     fn cmp(&self, other: &Self) -> Ordering {
-        self.datacenter_worker.cmp(&other.datacenter_worker)
+        self.machine_node.cmp(&other.machine_node)
     }
 }
 
@@ -89,6 +89,6 @@ impl<G> PartialOrd for SnowflakeIdGenerator<G> {
 
 impl<G> Hash for SnowflakeIdGenerator<G> {
     fn hash<H: Hasher>(&self, state: &mut H) {
-        self.datacenter_worker.hash(state);
+        self.machine_node.hash(state);
     }
 }

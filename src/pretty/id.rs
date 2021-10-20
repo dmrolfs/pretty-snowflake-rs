@@ -69,9 +69,9 @@ impl Hash for Id {
 
 #[cfg(test)]
 mod tests {
-    use pretty_assertions::assert_eq;
     use super::*;
-    use crate::{PrettyIdGenerator, IdPrettifier, AlphabetCodec, RealTimeGenerator};
+    use crate::{AlphabetCodec, IdPrettifier, PrettyIdGenerator, RealTimeGenerator};
+    use pretty_assertions::assert_eq;
 
     fn make_generator() -> PrettyIdGenerator<RealTimeGenerator, AlphabetCodec> {
         PrettyIdGenerator::single_node(IdPrettifier::<AlphabetCodec>::default())
