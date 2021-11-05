@@ -1,4 +1,4 @@
-use lazy_static::lazy_static;
+use once_cell::sync::Lazy;
 use tailcall::tailcall;
 
 pub fn encode(rep: &str) -> String {
@@ -19,8 +19,8 @@ pub fn is_valid(rep: &str) -> bool {
     checksum(rep) == 0
 }
 
-lazy_static! {
-    static ref MATRIX: [[usize; 10]; 10] = [
+static MATRIX: Lazy<[[usize; 10]; 10]> = Lazy::new(|| {
+    [
         [0, 3, 1, 7, 5, 9, 8, 6, 4, 2],
         [7, 0, 9, 2, 1, 5, 4, 8, 6, 3],
         [4, 2, 0, 6, 8, 7, 1, 3, 5, 9],
@@ -31,8 +31,8 @@ lazy_static! {
         [8, 9, 4, 5, 3, 6, 2, 0, 1, 7],
         [9, 4, 3, 8, 6, 1, 7, 2, 0, 5],
         [2, 5, 8, 1, 4, 3, 6, 7, 9, 0],
-    ];
-}
+    ]
+});
 
 /// Calculates the checksum from the provided string
 /// Params:

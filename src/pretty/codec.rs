@@ -1,4 +1,4 @@
-use lazy_static::lazy_static;
+use once_cell::sync::Lazy;
 use tailcall::tailcall;
 
 pub trait Codec {
@@ -77,9 +77,7 @@ pub struct Alphabet {
     pub base: usize,
 }
 
-lazy_static! {
-    static ref BASE_23: Alphabet = Alphabet::new("ABCDEFGHJKLMNPQRSTUVXYZ");
-}
+static BASE_23: Lazy<Alphabet> = Lazy::new(|| Alphabet::new("ABCDEFGHJKLMNPQRSTUVXYZ"));
 
 impl Alphabet {
     pub fn new(base: impl Into<String>) -> Self {
@@ -103,14 +101,11 @@ impl Alphabet {
 
 #[cfg(test)]
 mod tests {
-    use lazy_static::lazy_static;
     use pretty_assertions::assert_eq;
 
     use super::*;
 
-    lazy_static! {
-        static ref CODEC: AlphabetCodec = AlphabetCodec::default();
-    }
+    static CODEC: Lazy<AlphabetCodec> = Lazy::new(|| AlphabetCodec::default());
 
     #[test]
     fn test_encode_value() {
