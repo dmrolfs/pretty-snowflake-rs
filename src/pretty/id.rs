@@ -86,4 +86,18 @@ mod tests {
         let b = generator.next_id();
         assert!(a < b);
     }
+
+    #[test]
+    fn test_display() {
+        let mut generator = make_generator();
+        let a = generator.next_id();
+        assert_eq!(format!("{}", a), a.pretty);
+    }
+
+    #[test]
+    fn test_alternate_display() {
+        let mut generator = make_generator();
+        let a = generator.next_id();
+        assert_eq!(format!("{:#}", a), a.snowflake.to_string());
+    }
 }
