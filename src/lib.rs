@@ -8,6 +8,11 @@ use std::cmp::Ordering;
 use std::fmt;
 use validator::{Validate, ValidationErrors};
 
+pub type PrettyRealtimeIdGenerator = PrettyTypedIdGenerator<RealTimeGenerator>;
+pub type PrettyBasicIdGenerator = PrettyTypedIdGenerator<Generator>;
+pub type PrettyLazyIdGenerator = PrettyTypedIdGenerator<LazyGenerator>;
+pub type PrettyTypedIdGenerator<G> = PrettyIdGenerator<G, AlphabetCodec>;
+
 /// Used to supplement the sectionalization attribute of the Snowflake algorithm in a distributed
 /// environment. The machine_id and node_id are combined to form a unique worker_id used by the
 /// Snowflake algorithm. This worker_id must be unique for a target identifier space (e.g.,
