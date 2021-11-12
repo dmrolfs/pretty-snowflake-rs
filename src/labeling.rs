@@ -1,3 +1,4 @@
+use crate::Label;
 use pretty_type_name::pretty_type_name;
 use std::borrow::Cow;
 use std::fmt;
@@ -7,17 +8,32 @@ pub trait Labeling {
     fn label(&self) -> Cow<'static, str>;
 }
 
+impl dyn Labeling {
+    pub fn summon<T: Label>() -> Box<dyn Labeling> {
+        T::labeler()
+    }
+}
+
+#[derive(Copy)]
 pub struct MakeLabeling<T: ?Sized> {
     marker: PhantomData<T>,
 }
 
-impl<T> MakeLabeling<T> {
+#[derive(Clone)]
+pub struct CustomLabeling {
+    label: String,
+}
+
+#[derive(Copy, Clone)]
+pub struct NoLabeling;
+
+impl<T: ?Sized> MakeLabeling<T> {
     pub fn new() -> Self {
         Self { marker: PhantomData }
     }
 }
 
-impl<T> Default for MakeLabeling<T> {
+impl<T: ?Sized> Default for MakeLabeling<T> {
     fn default() -> Self {
         MakeLabeling::new()
     }
@@ -29,27 +45,22 @@ impl<T: ?Sized> Labeling for MakeLabeling<T> {
     }
 }
 
-impl<T> fmt::Debug for MakeLabeling<T> {
+impl<T: ?Sized> fmt::Debug for MakeLabeling<T> {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         f.debug_tuple("MakeLabeling").field(&self.label()).finish()
     }
 }
 
-impl<T> fmt::Display for MakeLabeling<T> {
+impl<T: ?Sized> fmt::Display for MakeLabeling<T> {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         write!(f, "{}", self.label())
     }
 }
 
-impl<T> Clone for MakeLabeling<T> {
+impl<T: ?Sized> Clone for MakeLabeling<T> {
     fn clone(&self) -> Self {
         Self { marker: PhantomData }
     }
-}
-
-#[derive(Clone)]
-pub struct CustomLabeling {
-    label: String,
 }
 
 impl CustomLabeling {
@@ -88,22 +99,19 @@ impl From<String> for CustomLabeling {
     }
 }
 
-#[derive(Clone)]
-pub struct EmptyLabeling;
-
-impl Labeling for EmptyLabeling {
+impl Labeling for NoLabeling {
     fn label(&self) -> Cow<'static, str> {
         Cow::Borrowed("")
     }
 }
 
-impl fmt::Debug for EmptyLabeling {
+impl fmt::Debug for NoLabeling {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         f.debug_tuple("EmptyLabeling").finish()
     }
 }
 
-impl fmt::Display for EmptyLabeling {
+impl fmt::Display for NoLabeling {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         write!(f, "")
     }
@@ -145,8 +153,8 @@ mod tests {
 
     #[test]
     fn test_empty_labeling() {
-        assert_eq!(EmptyLabeling.label(), Cow::<'static, str>::default());
-        assert_eq!(EmptyLabeling.label(), EmptyLabeling.label());
+        assert_eq!(NoLabeling.label(), Cow::<'static, str>::default());
+        assert_eq!(NoLabeling.label(), NoLabeling.label());
     }
 
     #[test]

@@ -1,9 +1,11 @@
 mod generator;
+mod label;
 mod labeling;
 mod pretty;
 
 pub use generator::{Generator, IdGenerator, LazyGenerator, RealTimeGenerator, SnowflakeIdGenerator};
-pub use labeling::{CustomLabeling, EmptyLabeling, Labeling, MakeLabeling};
+pub use label::Label;
+pub use labeling::{CustomLabeling, Labeling, MakeLabeling, NoLabeling};
 pub use pretty::{Alphabet, AlphabetCodec, Codec, Id, IdPrettifier, PrettyIdGenerator};
 
 use serde::{Deserialize, Serialize};
