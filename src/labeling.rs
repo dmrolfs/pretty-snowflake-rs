@@ -41,6 +41,13 @@ impl<T> fmt::Display for MakeLabeling<T> {
     }
 }
 
+impl<T> Clone for MakeLabeling<T> {
+    fn clone(&self) -> Self {
+        Self { marker: PhantomData }
+    }
+}
+
+#[derive(Clone)]
 pub struct CustomLabeling {
     label: String,
 }
@@ -81,6 +88,7 @@ impl From<String> for CustomLabeling {
     }
 }
 
+#[derive(Clone)]
 pub struct EmptyLabeling;
 
 impl Labeling for EmptyLabeling {
