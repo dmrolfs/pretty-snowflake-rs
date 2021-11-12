@@ -82,3 +82,40 @@ where
         Id::new(self.labeling.label(), self.generator.next_id(), &self.prettifier)
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use crate::{CustomLabeling, LazyGenerator};
+    use pretty_assertions::assert_eq;
+
+    struct NonLabelZed;
+
+    struct Foo;
+
+    impl Label for Foo {
+        type Labeler = CustomLabeling;
+
+        fn labeler() -> Self::Labeler {
+            CustomLabeling::new("MyFooferNut")
+        }
+    }
+
+    #[test]
+    fn test_non_label_custom_generator() {
+        let mut gen: PrettyIdGenerator<NonLabelZed, CustomLabeling, LazyGenerator, AlphabetCodec> =
+            PrettyIdGenerator::single_node_labeling(CustomLabeling::new("Zedster"), IdPrettifier::default());
+
+        let actual = gen.next_id();
+        assert_eq!(format!("{:?}", actual), format!("Zedster::{}", actual))
+    }
+
+    #[test]
+    fn test_labeled_generator() {
+        let mut gen: PrettyIdGenerator<Foo, CustomLabeling, LazyGenerator, AlphabetCodec> =
+            PrettyIdGenerator::single_node(IdPrettifier::default());
+
+        let actual = gen.next_id();
+        assert_eq!(format!("{:?}", actual), format!("MyFooferNut::{}", actual))
+    }
+}
