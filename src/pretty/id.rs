@@ -9,7 +9,7 @@ use crate::pretty::prettifier::IdPrettifier;
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct Id {
-    label: String,
+    pub label: String,
     snowflake: i64,
     pretty: String, // todo: convert into [char; N] form to support Cpy semantics
 }
