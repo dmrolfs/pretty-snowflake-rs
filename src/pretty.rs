@@ -6,27 +6,76 @@ mod prettifier;
 pub use codec::{Alphabet, AlphabetCodec, Codec};
 pub use id::Id;
 pub use prettifier::IdPrettifier;
+use serde::__private::PhantomData;
 
 use crate::{IdGenerator, Label, Labeling, MachineNode, SnowflakeIdGenerator};
 
 #[derive(Debug, Clone)]
-pub struct PrettyIdGenerator<T: Label, G: IdGenerator, C: Codec> {
+pub struct PrettyIdGenerator<T, L, G, C>
+where
+    L: Labeling + Clone,
+    G: IdGenerator,
+    C: Codec,
+{
     generator: SnowflakeIdGenerator<G>,
     prettifier: IdPrettifier<C>,
-    labeling: <T as Label>::Labeler,
+    labeling: L,
+    marker: PhantomData<T>,
 }
 
-impl<T: Label, G: IdGenerator, C: Codec> PrettyIdGenerator<T, G, C> {
+impl<T, G, C> PrettyIdGenerator<T, <T as Label>::Labeler, G, C>
+where
+    T: Label,
+    G: IdGenerator,
+    C: Codec,
+{
     pub fn single_node(prettifier: IdPrettifier<C>) -> Self {
         let labeling = T::labeler();
-        let generator = SnowflakeIdGenerator::<G>::single_node();
-        Self { generator, prettifier, labeling }
+        let generator = SnowflakeIdGenerator::single_node();
+        Self {
+            generator,
+            prettifier,
+            labeling,
+            marker: PhantomData,
+        }
     }
 
     pub fn distributed(machine_node: MachineNode, prettifier: IdPrettifier<C>) -> Self {
         let labeling = T::labeler();
-        let generator = SnowflakeIdGenerator::<G>::distributed(machine_node);
-        Self { generator, prettifier, labeling }
+        let generator = SnowflakeIdGenerator::distributed(machine_node);
+        Self {
+            generator,
+            prettifier,
+            labeling,
+            marker: PhantomData,
+        }
+    }
+}
+
+impl<T, L, G, C> PrettyIdGenerator<T, L, G, C>
+where
+    L: Labeling + Clone,
+    G: IdGenerator,
+    C: Codec,
+{
+    pub fn single_node_labeling(labeling: L, prettifier: IdPrettifier<C>) -> Self {
+        let generator = SnowflakeIdGenerator::single_node();
+        Self {
+            generator,
+            prettifier,
+            labeling,
+            marker: PhantomData,
+        }
+    }
+
+    pub fn distributed_labeling(machine_node: MachineNode, labeling: L, prettifier: IdPrettifier<C>) -> Self {
+        let generator = SnowflakeIdGenerator::distributed(machine_node);
+        Self {
+            generator,
+            prettifier,
+            labeling,
+            marker: PhantomData,
+        }
     }
 
     pub fn next_id(&mut self) -> Id<T> {

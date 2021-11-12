@@ -1,7 +1,7 @@
 use claim::*;
 use pretty_assertions::assert_eq;
 use pretty_snowflake::{
-    Alphabet, AlphabetCodec, Id, IdPrettifier, Label, Labeling, MakeLabeling, PrettyIdGenerator, RealTimeGenerator,
+    Alphabet, AlphabetCodec, Id, IdPrettifier, Label, LabeledRealtimeIdGenerator, MakeLabeling, PrettyIdGenerator,
 };
 use regex::Regex;
 
@@ -18,9 +18,7 @@ impl Label for Zed {
 #[test]
 fn test_present_example_of_usage() {
     // create instance of it
-    let mut generator: PrettyIdGenerator<Zed, RealTimeGenerator, AlphabetCodec> =
-        PrettyIdGenerator::single_node(IdPrettifier::default());
-    // let mut generator = PrettyIdGenerator::<RealTimeGenerator, AlphabetCodec>::single_node(IdPrettifier::default());
+    let mut generator: LabeledRealtimeIdGenerator<Zed> = PrettyIdGenerator::single_node(IdPrettifier::default());
 
     // generate ids
     let actual: Id<Zed> = generator.next_id();

@@ -10,14 +10,14 @@ use crate::pretty::codec::Codec;
 use crate::pretty::prettifier::IdPrettifier;
 
 #[derive(Serialize, Deserialize)]
-pub struct Id<T: Label + ?Sized> {
+pub struct Id<T> {
     pub label: String,
     snowflake: i64,
     pretty: String, // todo: convert into [char; N] form to support Cpy semantics
     marker: PhantomData<T>,
 }
 
-impl<T: Label + ?Sized> Id<T> {
+impl<T> Id<T> {
     pub fn new<C: Codec>(label: impl Into<String>, snowflake: i64, prettifier: &IdPrettifier<C>) -> Self {
         Self {
             label: label.into(),
@@ -36,7 +36,7 @@ impl<T: Label + ?Sized> Id<T> {
         }
     }
 
-    pub fn reapply<B: Label + ?Sized>(&self) -> Id<B> {
+    pub fn relabel<B: Label>(&self) -> Id<B> {
         let b_labeler = B::labeler();
         Id {
             label: b_labeler.label().into_owned(),
@@ -47,7 +47,7 @@ impl<T: Label + ?Sized> Id<T> {
     }
 }
 
-impl<T: Label + ?Sized> Clone for Id<T> {
+impl<T> Clone for Id<T> {
     fn clone(&self) -> Self {
         Self {
             label: self.label.clone(),
@@ -58,7 +58,7 @@ impl<T: Label + ?Sized> Clone for Id<T> {
     }
 }
 
-impl<T: Label + ?Sized> fmt::Debug for Id<T> {
+impl<T> fmt::Debug for Id<T> {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         if f.alternate() {
             f.debug_struct("Id")
@@ -74,7 +74,7 @@ impl<T: Label + ?Sized> fmt::Debug for Id<T> {
     }
 }
 
-impl<T: Label + ?Sized> fmt::Display for Id<T> {
+impl<T> fmt::Display for Id<T> {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         if f.alternate() {
             write!(f, "{}", self.snowflake)
@@ -84,39 +84,39 @@ impl<T: Label + ?Sized> fmt::Display for Id<T> {
     }
 }
 
-impl<T: Label + ?Sized> Into<i64> for Id<T> {
+impl<T> Into<i64> for Id<T> {
     fn into(self) -> i64 {
         self.snowflake
     }
 }
 
-impl<T: Label + ?Sized> Into<String> for Id<T> {
+impl<T> Into<String> for Id<T> {
     fn into(self) -> String {
         self.pretty
     }
 }
 
-impl<T: Label + ?Sized> PartialEq for Id<T> {
+impl<T> PartialEq for Id<T> {
     fn eq(&self, other: &Self) -> bool {
         self.snowflake == other.snowflake
     }
 }
 
-impl<T: Label + ?Sized> Eq for Id<T> {}
+impl<T> Eq for Id<T> {}
 
-impl<T: Label + ?Sized> Ord for Id<T> {
+impl<T> Ord for Id<T> {
     fn cmp(&self, other: &Self) -> Ordering {
         self.snowflake.cmp(&other.snowflake)
     }
 }
 
-impl<T: Label + ?Sized> PartialOrd for Id<T> {
+impl<T> PartialOrd for Id<T> {
     fn partial_cmp(&self, other: &Self) -> Option<Ordering> {
         Some(self.cmp(other))
     }
 }
 
-impl<T: Label + ?Sized> Hash for Id<T> {
+impl<T> Hash for Id<T> {
     fn hash<H: Hasher>(&self, state: &mut H) {
         self.snowflake.hash(state);
     }
@@ -124,7 +124,7 @@ impl<T: Label + ?Sized> Hash for Id<T> {
 
 #[cfg(test)]
 mod tests {
-    use crate::{AlphabetCodec, Id, IdPrettifier, Label, MakeLabeling, PrettyIdGenerator, RealTimeGenerator};
+    use crate::{AlphabetCodec, Id, IdPrettifier, Label, LabeledRealtimeIdGenerator, MakeLabeling, PrettyIdGenerator};
     use pretty_assertions::assert_eq;
 
     struct Foo;
@@ -136,7 +136,7 @@ mod tests {
         }
     }
 
-    fn make_generator<T: Label>() -> PrettyIdGenerator<T, RealTimeGenerator, AlphabetCodec> {
+    fn make_generator<T: Label>() -> LabeledRealtimeIdGenerator<T> {
         PrettyIdGenerator::single_node(IdPrettifier::<AlphabetCodec>::default())
     }
 
@@ -189,7 +189,7 @@ mod tests {
         let before = format!("{:?}", a);
         assert_eq!(format!("String::{}", a.pretty), before);
 
-        let b: Id<usize> = a.reapply();
+        let b: Id<usize> = a.relabel();
         let after = format!("{:?}", b);
         assert_eq!(format!("usize::{}", b.pretty), after);
     }
