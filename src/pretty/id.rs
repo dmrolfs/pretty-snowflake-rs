@@ -7,7 +7,7 @@ use serde::{Deserialize, Serialize};
 use crate::pretty::codec::Codec;
 use crate::pretty::prettifier::IdPrettifier;
 
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Clone, Serialize, Deserialize)]
 pub struct Id {
     pub label: String,
     snowflake: i64,
@@ -32,16 +32,28 @@ impl Id {
     }
 }
 
+impl fmt::Debug for Id {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        if f.alternate() {
+            f.debug_struct("Id")
+                .field("label", &self.label)
+                .field("snowflake", &self.snowflake)
+                .field("pretty", &self.pretty)
+                .finish()
+        } else if self.label.is_empty() {
+            f.write_str(self.pretty.as_str())
+        } else {
+            f.write_fmt(format_args!("{}::{}", self.label, self.pretty))
+        }
+    }
+}
+
 impl fmt::Display for Id {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         if f.alternate() {
             write!(f, "{}", self.snowflake)
         } else {
-            if self.label.is_empty() {
-                write!(f, "{}", self.pretty)
-            } else {
-                write!(f, "{}::{}", self.label, self.pretty)
-            }
+            write!(f, "{}", self.pretty)
         }
     }
 }
@@ -88,6 +100,8 @@ impl Hash for Id {
 mod tests {
     use crate::labeling::CustomLabeling;
     use crate::{AlphabetCodec, IdPrettifier, PrettyIdGenerator, RealTimeGenerator};
+    use pretty_assertions::assert_eq;
+    use trim_margin::MarginTrimmable;
 
     fn make_generator() -> PrettyIdGenerator<RealTimeGenerator, CustomLabeling, AlphabetCodec> {
         PrettyIdGenerator::single_node(CustomLabeling::new("Foo"), IdPrettifier::<AlphabetCodec>::default())
@@ -105,7 +119,7 @@ mod tests {
     fn test_display() {
         let mut generator = make_generator();
         let a = generator.next_id();
-        assert_eq!(format!("{}", a), format!("Foo::{}", a.pretty));
+        assert_eq!(format!("{}", a), a.pretty);
     }
 
     #[test]
@@ -113,5 +127,25 @@ mod tests {
         let mut generator = make_generator();
         let a = generator.next_id();
         assert_eq!(format!("{:#}", a), a.snowflake.to_string());
+    }
+
+    #[test]
+    fn test_debug() {
+        let mut generator = make_generator();
+        let a = generator.next_id();
+        assert_eq!(format!("{:?}", a), format!("Foo::{}", a.pretty));
+    }
+
+    #[test]
+    fn test_alternate_debug() {
+        let mut generator = make_generator();
+        let a = generator.next_id();
+        let debug_template = assert_eq!(
+            format!("{:#?}", a),
+            format!(
+                "Id {{\n    label: \"{}\",\n    snowflake: {},\n    pretty: \"{}\",\n}}",
+                a.label, a.snowflake, a.pretty
+            )
+        );
     }
 }

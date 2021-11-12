@@ -16,7 +16,8 @@ thiserror = "1.0.30"
 validator = { version = "0.14.0", features = ["derive"] }
 
 [dev-dependencies]
-pretty_assertions = "1.0.0"
 claim = "0.5.0"
+pretty_assertions = "1.0.0"
 regex = "1.5.4"
 rand = "0.8.4"
+trim-margin = "*"
