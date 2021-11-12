@@ -1,17 +1,22 @@
 mod generator;
+mod labeling;
 mod pretty;
 
 pub use generator::{Generator, IdGenerator, LazyGenerator, RealTimeGenerator, SnowflakeIdGenerator};
+pub use labeling::{CustomLabeling, EmptyLabeling, Labeling, MakeLabeling};
 pub use pretty::{Alphabet, AlphabetCodec, Codec, Id, IdPrettifier, PrettyIdGenerator};
+
 use serde::{Deserialize, Serialize};
 use std::cmp::Ordering;
 use std::fmt;
 use validator::{Validate, ValidationErrors};
 
-pub type PrettyRealtimeIdGenerator = PrettyTypedIdGenerator<RealTimeGenerator>;
-pub type PrettyBasicIdGenerator = PrettyTypedIdGenerator<Generator>;
-pub type PrettyLazyIdGenerator = PrettyTypedIdGenerator<LazyGenerator>;
-pub type PrettyTypedIdGenerator<G> = PrettyIdGenerator<G, AlphabetCodec>;
+pub type PrettyTypedIdGenerator<T, G> = PrettyIdGenerator<G, MakeLabeling<T>, AlphabetCodec>;
+pub type PrettyCustomIdGenerator<G> = PrettyIdGenerator<G, CustomLabeling, AlphabetCodec>;
+
+pub type PrettyRealtimeIdGenerator<T> = PrettyTypedIdGenerator<T, RealTimeGenerator>;
+pub type PrettyBasicIdGenerator<T> = PrettyTypedIdGenerator<T, Generator>;
+pub type PrettyLazyIdGenerator<T> = PrettyTypedIdGenerator<T, LazyGenerator>;
 
 /// Used to supplement the sectionalization attribute of the Snowflake algorithm in a distributed
 /// environment. The machine_id and node_id are combined to form a unique worker_id used by the

@@ -1,12 +1,15 @@
 use claim::*;
 use pretty_assertions::assert_eq;
-use pretty_snowflake::{Alphabet, AlphabetCodec, IdPrettifier, PrettyIdGenerator, RealTimeGenerator};
+use pretty_snowflake::{Alphabet, AlphabetCodec, IdPrettifier, MakeLabeling, PrettyRealtimeIdGenerator};
 use regex::Regex;
+
+struct Zed;
 
 #[test]
 fn test_present_example_of_usage() {
     // create instance of it
-    let mut generator = PrettyIdGenerator::<RealTimeGenerator, AlphabetCodec>::single_node(IdPrettifier::default());
+    let mut generator = PrettyRealtimeIdGenerator::<Zed>::single_node(MakeLabeling::default(), IdPrettifier::default());
+    // let mut generator = PrettyIdGenerator::<RealTimeGenerator, AlphabetCodec>::single_node(IdPrettifier::default());
 
     // generate ids
     let actual = generator.next_id();
