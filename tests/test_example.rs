@@ -1,9 +1,16 @@
 use claim::*;
 use pretty_assertions::assert_eq;
-use pretty_snowflake::{Alphabet, AlphabetCodec, IdPrettifier, MakeLabeling, PrettyRealtimeIdGenerator};
+use pretty_snowflake::{
+    Alphabet, AlphabetCodec, Id, IdPrettifier, Label, Labeling, MakeLabeling, PrettyRealtimeIdGenerator,
+};
 use regex::Regex;
 
 struct Zed;
+impl Label for Zed {
+    fn labeler() -> Box<dyn Labeling> {
+        Box::new(MakeLabeling::<Zed>::default())
+    }
+}
 
 #[test]
 fn test_present_example_of_usage() {
@@ -12,7 +19,7 @@ fn test_present_example_of_usage() {
     // let mut generator = PrettyIdGenerator::<RealTimeGenerator, AlphabetCodec>::single_node(IdPrettifier::default());
 
     // generate ids
-    let actual = generator.next_id();
+    let actual: Id<Zed> = generator.next_id();
     let actual_str: String = actual.clone().into();
     assert!(!actual_str.is_empty());
 

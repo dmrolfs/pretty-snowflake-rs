@@ -7,7 +7,7 @@ pub use codec::{Alphabet, AlphabetCodec, Codec};
 pub use id::Id;
 pub use prettifier::IdPrettifier;
 
-use crate::{IdGenerator, Labeling, MachineNode, SnowflakeIdGenerator};
+use crate::{IdGenerator, Label, Labeling, MachineNode, SnowflakeIdGenerator};
 
 #[derive(Debug, Clone)]
 pub struct PrettyIdGenerator<G: IdGenerator, L: Labeling, C: Codec> {
@@ -45,7 +45,7 @@ impl<G: IdGenerator, L: Labeling, C: Codec> PrettyIdGenerator<G, L, C> {
         }
     }
 
-    pub fn next_id(&mut self) -> Id {
+    pub fn next_id<T: Label + ?Sized>(&mut self) -> Id<T> {
         Id::new(self.labeling.label(), self.generator.next_id(), &self.prettifier)
     }
 }
