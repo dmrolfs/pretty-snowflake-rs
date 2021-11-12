@@ -6,8 +6,6 @@ mod prettifier;
 pub use codec::{Alphabet, AlphabetCodec, Codec};
 pub use id::Id;
 pub use prettifier::IdPrettifier;
-use std::marker::PhantomData;
-use std::sync::Arc;
 
 use crate::{IdGenerator, Label, Labeling, MachineNode, SnowflakeIdGenerator};
 
@@ -15,30 +13,20 @@ use crate::{IdGenerator, Label, Labeling, MachineNode, SnowflakeIdGenerator};
 pub struct PrettyIdGenerator<T: Label, G: IdGenerator, C: Codec> {
     generator: SnowflakeIdGenerator<G>,
     prettifier: IdPrettifier<C>,
-    labeling: Arc<Box<dyn Labeling>>,
-    marker: PhantomData<T>,
+    labeling: <T as Label>::Labeler,
 }
 
 impl<T: Label, G: IdGenerator, C: Codec> PrettyIdGenerator<T, G, C> {
     pub fn single_node(prettifier: IdPrettifier<C>) -> Self {
-        let labeling = Arc::new(T::labeler());
+        let labeling = T::labeler();
         let generator = SnowflakeIdGenerator::<G>::single_node();
-        Self {
-            generator,
-            prettifier,
-            labeling,
-            marker: PhantomData,
-        }
+        Self { generator, prettifier, labeling }
     }
 
     pub fn distributed(machine_node: MachineNode, prettifier: IdPrettifier<C>) -> Self {
-        let labeling = Arc::new(T::labeler());
-        Self {
-            generator: SnowflakeIdGenerator::<G>::distributed(machine_node),
-            prettifier,
-            labeling,
-            marker: PhantomData,
-        }
+        let labeling = T::labeler();
+        let generator = SnowflakeIdGenerator::<G>::distributed(machine_node);
+        Self { generator, prettifier, labeling }
     }
 
     pub fn next_id(&mut self) -> Id<T> {

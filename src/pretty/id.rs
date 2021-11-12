@@ -3,7 +3,7 @@ use std::fmt;
 use std::hash::{Hash, Hasher};
 use std::marker::PhantomData;
 
-use crate::Label;
+use crate::{Label, Labeling};
 use serde::{Deserialize, Serialize};
 
 use crate::pretty::codec::Codec;
@@ -124,15 +124,18 @@ impl<T: Label + ?Sized> Hash for Id<T> {
 
 #[cfg(test)]
 mod tests {
-    use crate::{AlphabetCodec, Id, IdPrettifier, Label, Labeling, MakeLabeling, PrettyIdGenerator, RealTimeGenerator};
+    use crate::{AlphabetCodec, Id, IdPrettifier, Label, MakeLabeling, PrettyIdGenerator, RealTimeGenerator};
     use pretty_assertions::assert_eq;
 
     struct Foo;
     impl Label for Foo {
-        fn labeler() -> Box<dyn Labeling> {
-            Box::new(MakeLabeling::<Foo>::default())
+        type Labeler = MakeLabeling<Foo>;
+
+        fn labeler() -> Self::Labeler {
+            MakeLabeling::default()
         }
     }
+
     fn make_generator<T: Label>() -> PrettyIdGenerator<T, RealTimeGenerator, AlphabetCodec> {
         PrettyIdGenerator::single_node(IdPrettifier::<AlphabetCodec>::default())
     }

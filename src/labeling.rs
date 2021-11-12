@@ -10,7 +10,7 @@ pub trait Labeling: Debug {
 }
 
 impl dyn Labeling {
-    pub fn summon<T: Label>() -> Box<dyn Labeling> {
+    pub fn summon<T: Label>() -> <T as Label>::Labeler {
         T::labeler()
     }
 }

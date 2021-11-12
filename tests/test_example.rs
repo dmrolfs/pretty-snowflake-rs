@@ -6,9 +6,12 @@ use pretty_snowflake::{
 use regex::Regex;
 
 struct Zed;
+
 impl Label for Zed {
-    fn labeler() -> Box<dyn Labeling> {
-        Box::new(MakeLabeling::<Zed>::default())
+    type Labeler = MakeLabeling<Zed>;
+
+    fn labeler() -> Self::Labeler {
+        MakeLabeling::<Zed>::default()
     }
 }
 

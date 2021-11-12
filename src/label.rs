@@ -1,27 +1,33 @@
 use crate::{Labeling, MakeLabeling, NoLabeling};
 
 pub trait Label {
-    fn labeler() -> Box<dyn Labeling>;
+    type Labeler: Labeling + Clone;
+    fn labeler() -> Self::Labeler;
 }
 
 impl Label for () {
-    fn labeler() -> Box<dyn Labeling> {
-        Box::new(NoLabeling)
+    type Labeler = NoLabeling;
+
+    fn labeler() -> Self::Labeler {
+        NoLabeling
     }
 }
 
-//used to help implement macro
+// used to help implement macro
 // impl Label for i64 {
-//     fn labeler() -> Box<dyn Labeling> {
-//         Box::new(MakeLabeling::<i64>::default())
+//     type Labeler = MakeLabeling<i64>;
+//
+//     fn labeler() -> Self::Labeler {
+//         MakeLabeling::<i64>::default()
 //     }
 // }
 
 macro_rules! primitive_label {
     ($i:ty) => {
         impl Label for $i {
-            fn labeler() -> Box<dyn Labeling> {
-                Box::new(MakeLabeling::<$i>::default())
+            type Labeler = MakeLabeling<Self>;
+            fn labeler() -> Self::Labeler {
+                MakeLabeling::<Self>::default()
             }
         }
     };
@@ -36,7 +42,6 @@ primitive_label!(i32);
 primitive_label!(i64);
 primitive_label!(i128);
 primitive_label!(isize);
-primitive_label!(&str);
 primitive_label!(u8);
 primitive_label!(u16);
 primitive_label!(u32);
@@ -44,6 +49,14 @@ primitive_label!(u64);
 primitive_label!(u128);
 primitive_label!(usize);
 primitive_label!(String);
+
+impl<'a> Label for &'a str {
+    type Labeler = MakeLabeling<Self>;
+
+    fn labeler() -> Self::Labeler {
+        MakeLabeling::<Self>::default()
+    }
+}
 
 #[cfg(test)]
 mod tests {
