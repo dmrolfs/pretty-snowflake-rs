@@ -6,46 +6,42 @@ mod prettifier;
 pub use codec::{Alphabet, AlphabetCodec, Codec};
 pub use id::Id;
 pub use prettifier::IdPrettifier;
+use std::marker::PhantomData;
+use std::rc::Rc;
 
 use crate::{IdGenerator, Label, Labeling, MachineNode, SnowflakeIdGenerator};
 
 #[derive(Debug, Clone)]
-pub struct PrettyIdGenerator<G: IdGenerator, L: Labeling, C: Codec> {
+pub struct PrettyIdGenerator<T: Label, G: IdGenerator, C: Codec> {
     generator: SnowflakeIdGenerator<G>,
     prettifier: IdPrettifier<C>,
-    labeling: L,
+    labeling: Rc<Box<dyn Labeling>>,
+    marker: PhantomData<T>,
 }
 
-impl<G, L, C> Default for PrettyIdGenerator<G, L, C>
-where
-    G: IdGenerator + Default,
-    L: Labeling + Default,
-    C: Codec + Default,
-{
-    fn default() -> Self {
+impl<T: Label, G: IdGenerator, C: Codec> PrettyIdGenerator<T, G, C> {
+    pub fn single_node(prettifier: IdPrettifier<C>) -> Self {
+        let labeling = Rc::new(T::labeler());
+        let generator = SnowflakeIdGenerator::<G>::single_node();
         Self {
-            generator: SnowflakeIdGenerator::<G>::default(),
-            prettifier: IdPrettifier::<C>::default(),
-            labeling: L::default(),
+            generator,
+            prettifier,
+            labeling,
+            marker: PhantomData,
         }
     }
-}
 
-impl<G: IdGenerator, L: Labeling, C: Codec> PrettyIdGenerator<G, L, C> {
-    pub fn single_node(labeling: L, prettifier: IdPrettifier<C>) -> Self {
-        let generator = SnowflakeIdGenerator::<G>::single_node();
-        Self { generator, labeling, prettifier }
-    }
-
-    pub fn distributed(labeling: L, machine_node: MachineNode, prettifier: IdPrettifier<C>) -> Self {
+    pub fn distributed(machine_node: MachineNode, prettifier: IdPrettifier<C>) -> Self {
+        let labeling = Rc::new(T::labeler());
         Self {
             generator: SnowflakeIdGenerator::<G>::distributed(machine_node),
-            labeling,
             prettifier,
+            labeling,
+            marker: PhantomData,
         }
     }
 
-    pub fn next_id<T: Label + ?Sized>(&mut self) -> Id<T> {
+    pub fn next_id(&mut self) -> Id<T> {
         Id::new(self.labeling.label(), self.generator.next_id(), &self.prettifier)
     }
 }

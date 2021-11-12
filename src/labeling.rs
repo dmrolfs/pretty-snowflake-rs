@@ -2,9 +2,10 @@ use crate::Label;
 use pretty_type_name::pretty_type_name;
 use std::borrow::Cow;
 use std::fmt;
+use std::fmt::Debug;
 use std::marker::PhantomData;
 
-pub trait Labeling {
+pub trait Labeling: Debug {
     fn label(&self) -> Cow<'static, str>;
 }
 

@@ -35,6 +35,16 @@ impl<T: Label + ?Sized> Id<T> {
             marker: PhantomData,
         }
     }
+
+    pub fn reapply<B: Label + ?Sized>(&self) -> Id<B> {
+        let b_labeler = B::labeler();
+        Id {
+            label: b_labeler.label().into_owned(),
+            snowflake: self.snowflake,
+            pretty: self.pretty.clone(),
+            marker: PhantomData,
+        }
+    }
 }
 
 impl<T: Label + ?Sized> Clone for Id<T> {
@@ -114,11 +124,8 @@ impl<T: Label + ?Sized> Hash for Id<T> {
 
 #[cfg(test)]
 mod tests {
-    use super::*;
-    use crate::labeling::CustomLabeling;
     use crate::{AlphabetCodec, Id, IdPrettifier, Label, Labeling, MakeLabeling, PrettyIdGenerator, RealTimeGenerator};
     use pretty_assertions::assert_eq;
-    use trim_margin::MarginTrimmable;
 
     struct Foo;
     impl Label for Foo {
@@ -126,14 +133,14 @@ mod tests {
             Box::new(MakeLabeling::<Foo>::default())
         }
     }
-    fn make_generator() -> PrettyIdGenerator<RealTimeGenerator, CustomLabeling, AlphabetCodec> {
-        PrettyIdGenerator::single_node(CustomLabeling::new("Foo"), IdPrettifier::<AlphabetCodec>::default())
+    fn make_generator<T: Label>() -> PrettyIdGenerator<T, RealTimeGenerator, AlphabetCodec> {
+        PrettyIdGenerator::single_node(IdPrettifier::<AlphabetCodec>::default())
     }
 
     #[test]
     fn test_partial_ord() {
-        let mut generator = make_generator();
-        let a = generator.next_id::<()>();
+        let mut generator = make_generator::<()>();
+        let a = generator.next_id();
         let b = generator.next_id();
         assert!(a < b);
     }
@@ -163,12 +170,24 @@ mod tests {
     fn test_alternate_debug() {
         let mut generator = make_generator();
         let a: Id<Foo> = generator.next_id();
-        let debug_template = assert_eq!(
+        assert_eq!(
             format!("{:#?}", a),
             format!(
                 "Id {{\n    label: \"{}\",\n    snowflake: {},\n    pretty: \"{}\",\n}}",
                 a.label, a.snowflake, a.pretty
             )
         );
+    }
+
+    #[test]
+    fn test_id_cross_conversion() {
+        let mut generator = make_generator();
+        let a: Id<String> = generator.next_id();
+        let before = format!("{:?}", a);
+        assert_eq!(format!("String::{}", a.pretty), before);
+
+        let b: Id<usize> = a.reapply();
+        let after = format!("{:?}", b);
+        assert_eq!(format!("usize::{}", b.pretty), after);
     }
 }

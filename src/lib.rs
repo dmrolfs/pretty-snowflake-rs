@@ -13,12 +13,9 @@ use std::cmp::Ordering;
 use std::fmt;
 use validator::{Validate, ValidationErrors};
 
-pub type PrettyTypedIdGenerator<T, G> = PrettyIdGenerator<G, MakeLabeling<T>, AlphabetCodec>;
-pub type PrettyCustomIdGenerator<G> = PrettyIdGenerator<G, CustomLabeling, AlphabetCodec>;
-
-pub type PrettyRealtimeIdGenerator<T> = PrettyTypedIdGenerator<T, RealTimeGenerator>;
-pub type PrettyBasicIdGenerator<T> = PrettyTypedIdGenerator<T, Generator>;
-pub type PrettyLazyIdGenerator<T> = PrettyTypedIdGenerator<T, LazyGenerator>;
+pub type PrettyRealtimeIdGenerator<T> = PrettyIdGenerator<T, RealTimeGenerator, AlphabetCodec>;
+pub type PrettyBasicIdGenerator<T> = PrettyIdGenerator<T, Generator, AlphabetCodec>;
+pub type PrettyLazyIdGenerator<T> = PrettyIdGenerator<T, LazyGenerator, AlphabetCodec>;
 
 /// Used to supplement the sectionalization attribute of the Snowflake algorithm in a distributed
 /// environment. The machine_id and node_id are combined to form a unique worker_id used by the
