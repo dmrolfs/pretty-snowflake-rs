@@ -148,4 +148,11 @@ mod tests {
         assert_eq!(EmptyLabeling.label(), Cow::<'static, str>::default());
         assert_eq!(EmptyLabeling.label(), EmptyLabeling.label());
     }
+
+    #[test]
+    fn test_clone_make_labeling() {
+        let expected: MakeLabeling<Foo> = MakeLabeling::default();
+        let actual = expected.clone();
+        assert_eq!(actual.label(), expected.label())
+    }
 }
