@@ -5,6 +5,7 @@ use thiserror::Error;
 
 use super::damm;
 use crate::pretty::codec::Codec;
+use crate::snowflake::{Id as SnowflakeId};
 
 #[derive(Debug, Error)]
 pub enum ConversionError {
@@ -55,8 +56,8 @@ impl<C: Codec + Default> Default for IdPrettifier<C> {
 }
 
 impl<C: Codec> IdPrettifier<C> {
-    pub fn prettify(&self, id_seed: i64) -> String {
-        let parts = self.divide(damm::encode(format!("{}", id_seed).as_str()));
+    pub fn prettify(&self, id_seed: impl Into<SnowflakeId>) -> String {
+        let parts = self.divide(damm::encode(format!("{}", id_seed.into()).as_str()));
         let parts_to_convert = self.convert_with_leading_zeros(parts, |item| self.add_leading_zeros_parts(item));
         self.convert_parts(parts_to_convert)
     }
@@ -65,7 +66,7 @@ impl<C: Codec> IdPrettifier<C> {
         damm::is_valid(self.decode_seed_with_check_digit(id).as_str())
     }
 
-    pub fn to_id_seed(&self, id: &str) -> Result<i64, ConversionError> {
+    pub fn to_id_seed(&self, id: &str) -> Result<SnowflakeId, ConversionError> {
         self.convert_to_id(id)
     }
 
@@ -91,13 +92,13 @@ impl<C: Codec> IdPrettifier<C> {
             .collect()
     }
 
-    fn convert_to_id(&self, rep: &str) -> Result<i64, ConversionError> {
+    fn convert_to_id(&self, rep: &str) -> Result<SnowflakeId, ConversionError> {
         let decoded_with_check_digit = self.decode_seed_with_check_digit(rep);
         if damm::is_valid(&decoded_with_check_digit) {
             decoded_with_check_digit
                 .get(..(decoded_with_check_digit.len() - 1))
                 .ok_or(ConversionError::InvalidId(rep.to_string()))
-                .and_then(|decoded| i64::from_str(decoded).map_err(|err| err.into()))
+                .and_then(|decoded| SnowflakeId::from_str(decoded).map_err(|err| err.into()))
         } else {
             Err(ConversionError::InvalidId(rep.to_string()))
         }
@@ -177,13 +178,14 @@ impl<C: Codec> IdPrettifier<C> {
 mod tests {
     use claim::*;
     use itertools::Itertools;
+    use once_cell::sync::Lazy;
     use pretty_assertions::assert_eq;
     use rand::distributions::Distribution;
 
     use super::*;
     use crate::{Alphabet, AlphabetCodec, Generator, LazyGenerator, RealTimeGenerator, SnowflakeIdGenerator};
 
-    const EXAMPLE_ID: i64 = 824227036833910784;
+    const EXAMPLE_ID: Lazy<SnowflakeId> = Lazy::new(|| 824227036833910784.into());
     const EXAMPLE_REP: &'static str = "824227036833910784";
 
     #[test]
@@ -265,7 +267,7 @@ mod tests {
         let max_pretty_id = default.prettify(i64::MAX);
         assert_eq!(&max_pretty_id, "HPJD-72036-HAPK-58077");
 
-        let example_pretty_id = default.prettify(EXAMPLE_ID);
+        let example_pretty_id = default.prettify(*EXAMPLE_ID);
         assert_eq!(&example_pretty_id, "ARPJ-27036-GVQS-07849");
         assert_eq!(&default.prettify(1), "AAAA-00000-AAAA-00013");
 
@@ -290,7 +292,7 @@ mod tests {
         let max_pretty_id = prettifier.prettify(i64::MAX);
         assert_eq!(&max_pretty_id, "HPJD-72036-HAPK-58077");
 
-        let example_pretty_id = prettifier.prettify(EXAMPLE_ID);
+        let example_pretty_id = prettifier.prettify(*EXAMPLE_ID);
         assert_eq!(&example_pretty_id, "RPJ-27036-GVQS-07849");
 
         assert_eq!(&prettifier.prettify(1), "13");
@@ -308,15 +310,15 @@ mod tests {
 
         assert_eq!(
             assert_ok!(prettified_with_leading.to_id_seed("HPJD-72036-HAPK-58077")),
-            i64::MAX
+            i64::MAX.into()
         );
         assert_eq!(
             assert_ok!(prettified_with_leading.to_id_seed("ARPJ-27036-GVQS-07849")),
-            EXAMPLE_ID
+            *EXAMPLE_ID
         );
         assert_eq!(
             assert_ok!(prettified_with_leading.to_id_seed("AAAA-00000-AAAA-00013")),
-            1
+            1.into()
         );
     }
 
@@ -329,7 +331,7 @@ mod tests {
         // assert_eq!(assert_ok!(prettified_without_leading_zeros.to_id_seed("HPJD-72036-HAPK-58077")),
         // i64::MAX); assert_eq!(assert_ok!(prettified_without_leading_zeros.to_id_seed("
         // RPJ-27036-GVQS-07849")), EXAMPLE_ID);
-        assert_eq!(assert_ok!(prettified_without_leading_zeros.to_id_seed("13")), 1);
+        assert_eq!(assert_ok!(prettified_without_leading_zeros.to_id_seed("13")), 1.into());
     }
 
     #[test]
@@ -421,7 +423,7 @@ mod tests {
             let seed = between.sample(&mut rng);
             let id = prettifier.prettify(seed);
             let decoded_seed = assert_ok!(prettifier.to_id_seed(&id));
-            assert_eq!(decoded_seed, seed);
+            assert_eq!(decoded_seed, seed.into());
         })
     }
 
@@ -449,7 +451,7 @@ mod tests {
             let seed = between.sample(&mut rng);
             let id = prettifier.prettify(seed);
             let decoded_seed = assert_ok!(prettifier.to_id_seed(&id));
-            assert_eq!(decoded_seed, seed);
+            assert_eq!(decoded_seed, seed.into());
         })
     }
 }

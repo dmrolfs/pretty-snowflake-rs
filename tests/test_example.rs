@@ -5,15 +5,16 @@ use pretty_snowflake::{
 };
 use regex::Regex;
 
+#[derive(Label)]
 struct Zed;
 
-impl Label for Zed {
-    type Labeler = MakeLabeling<Zed>;
-
-    fn labeler() -> Self::Labeler {
-        MakeLabeling::<Zed>::default()
-    }
-}
+// impl Label for Zed {
+//     type Labeler = MakeLabeling<Zed>;
+//
+//     fn labeler() -> Self::Labeler {
+//         MakeLabeling::default()
+//     }
+// }
 
 #[test]
 fn test_present_example_of_usage() {
@@ -38,7 +39,7 @@ fn test_present_example_of_usage() {
 
     // get seed
     let origin = assert_ok!(prettifier.to_id_seed(&id));
-    assert_eq!(origin, 100);
+    assert_eq!(origin, 100.into());
 
     // use custom prettifier
     let custom_prettifier = IdPrettifier {

@@ -1,4 +1,12 @@
-mod generator;
+#[cfg(feature = "derive")]
+#[allow(unused_imports)]
+#[macro_use]
+extern crate pretty_snowflake_derive;
+#[cfg(feature = "derive")]
+#[doc(hidden)]
+pub use pretty_snowflake_derive::*;
+
+mod snowflake;
 mod label;
 mod labeling;
 mod pretty;
@@ -6,7 +14,7 @@ mod pretty;
 use std::cmp::Ordering;
 use std::fmt;
 
-pub use generator::{Generator, IdGenerator, LazyGenerator, RealTimeGenerator, SnowflakeIdGenerator};
+pub use crate::snowflake::{Generator, IdGenerator, LazyGenerator, RealTimeGenerator, SnowflakeIdGenerator};
 pub use label::Label;
 pub use labeling::{CustomLabeling, Labeling, MakeLabeling, NoLabeling};
 pub use pretty::{Alphabet, AlphabetCodec, Codec, Id, IdPrettifier, PrettyIdGenerator};

@@ -1,13 +1,55 @@
 use std::cmp::Ordering;
 use std::hash::{Hash, Hasher};
 use std::marker::PhantomData;
-
+use serde::{Serialize, Deserialize};
+use std::fmt;
+use std::str::FromStr;
 use snowflake::SnowflakeIdGenerator as Worker;
 
 use crate::MachineNode;
 
+#[derive(Default, Copy, Clone, PartialEq, Eq, PartialOrd, Ord, Hash, Serialize, Deserialize)]
+pub struct Id(i64);
+
+impl fmt::Debug for Id {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        if f.alternate() {
+            write!(f, "Id({})", self.0)
+        } else {
+            f.debug_tuple("Id").field(&self.0).finish()
+        }
+    }
+}
+
+impl fmt::Display for Id {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        write!(f, "{}", self.0)
+    }
+}
+
+impl Into<i64> for Id {
+    fn into(self) -> i64 {
+        self.0
+    }
+}
+
+impl From<i64> for Id {
+    fn from(id: i64) -> Self {
+        Id(id)
+    }
+}
+
+impl FromStr for Id {
+    type Err = std::num::ParseIntError;
+
+    fn from_str(rep: &str) -> Result<Self, Self::Err> {
+        Ok(i64::from_str(rep)?.into())
+    }
+}
+
+
 pub trait IdGenerator {
-    fn next_id(worker: &mut Worker) -> i64;
+    fn next_id(worker: &mut Worker) -> Id;
 }
 
 #[derive(Debug, Default, Copy, Clone)]
@@ -20,20 +62,20 @@ pub struct Generator;
 pub struct LazyGenerator;
 
 impl IdGenerator for RealTimeGenerator {
-    fn next_id(worker: &mut Worker) -> i64 {
-        worker.real_time_generate()
+    fn next_id(worker: &mut Worker) -> Id {
+        worker.real_time_generate().into()
     }
 }
 
 impl IdGenerator for Generator {
-    fn next_id(worker: &mut Worker) -> i64 {
-        worker.generate()
+    fn next_id(worker: &mut Worker) -> Id {
+        worker.generate().into()
     }
 }
 
 impl IdGenerator for LazyGenerator {
-    fn next_id(worker: &mut Worker) -> i64 {
-        worker.lazy_generate()
+    fn next_id(worker: &mut Worker) -> Id {
+        worker.lazy_generate().into()
     }
 }
 
@@ -63,7 +105,7 @@ impl<G: IdGenerator> SnowflakeIdGenerator<G> {
         Self { machine_node, worker, marker: PhantomData }
     }
 
-    pub fn next_id(&mut self) -> i64 {
+    pub fn next_id(&mut self) -> Id {
         G::next_id(&mut self.worker)
     }
 }

@@ -11,6 +11,7 @@ use serde::Deserializer;
 use crate::pretty::codec::Codec;
 use crate::pretty::prettifier::IdPrettifier;
 use crate::{Label, Labeling};
+use crate::snowflake::{Id as SnowflakeId};
 
 const ID_SNOWFLAKE: &'static str = "snowflake";
 const ID_PRETTY: &'static str = "pretty";
@@ -18,25 +19,34 @@ const FIELDS: [&'static str; 2] = [ID_SNOWFLAKE, ID_PRETTY];
 
 pub struct Id<T> {
     pub label: String,
-    snowflake: i64,
+    snowflake: SnowflakeId,
     pretty: String, // todo: convert into [char; N] form to support Cpy semantics
     marker: PhantomData<T>,
 }
 
 impl<T> Id<T> {
-    pub fn new<C: Codec>(label: impl Into<String>, snowflake: i64, prettifier: &IdPrettifier<C>) -> Self {
+    pub fn new<C: Codec>(
+        label: impl Into<String>,
+        snowflake: impl Into<SnowflakeId>,
+        prettifier: &IdPrettifier<C>
+    ) -> Self {
+        let snowflake: SnowflakeId = snowflake.into();
         Self {
             label: label.into(),
-            snowflake,
+            snowflake: snowflake,
             pretty: prettifier.prettify(snowflake),
             marker: PhantomData,
         }
     }
 
-    pub fn direct(label: impl Into<String>, snowflake: i64, pretty: impl Into<String>) -> Self {
+    pub fn direct(
+        label: impl Into<String>,
+        snowflake: impl Into<SnowflakeId>,
+        pretty: impl Into<String>
+    ) -> Self {
         Self {
             label: label.into(),
-            snowflake,
+            snowflake: snowflake.into(),
             pretty: pretty.into(),
             marker: PhantomData,
         }
@@ -90,9 +100,15 @@ impl<T> fmt::Display for Id<T> {
     }
 }
 
+impl<T> Into<SnowflakeId> for Id<T> {
+    fn into(self) -> SnowflakeId {
+        self.snowflake
+    }
+}
+
 impl<T> Into<i64> for Id<T> {
     fn into(self) -> i64 {
-        self.snowflake
+        self.snowflake.into()
     }
 }
 
@@ -248,14 +264,8 @@ mod tests {
 
     use crate::{AlphabetCodec, Id, IdPrettifier, Label, LabeledRealtimeIdGenerator, MakeLabeling, PrettyIdGenerator};
 
+    #[derive(Label)]
     struct Foo;
-    impl Label for Foo {
-        type Labeler = MakeLabeling<Foo>;
-
-        fn labeler() -> Self::Labeler {
-            MakeLabeling::default()
-        }
-    }
 
     fn make_generator<T: Label>() -> LabeledRealtimeIdGenerator<T> {
         PrettyIdGenerator::single_node(IdPrettifier::<AlphabetCodec>::default())
@@ -297,7 +307,7 @@ mod tests {
         assert_eq!(
             format!("{:#?}", a),
             format!(
-                "Id {{\n    label: \"{}\",\n    snowflake: {},\n    pretty: \"{}\",\n}}",
+                "Id {{\n    label: \"{}\",\n    snowflake: Id({}),\n    pretty: \"{}\",\n}}",
                 a.label, a.snowflake, a.pretty
             )
         );
