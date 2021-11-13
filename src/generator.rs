@@ -2,8 +2,9 @@ use std::cmp::Ordering;
 use std::hash::{Hash, Hasher};
 use std::marker::PhantomData;
 
-use crate::MachineNode;
 use snowflake::SnowflakeIdGenerator as Worker;
+
+use crate::MachineNode;
 
 pub trait IdGenerator {
     fn next_id(worker: &mut Worker) -> i64;

@@ -26,6 +26,7 @@ macro_rules! primitive_label {
     ($i:ty) => {
         impl Label for $i {
             type Labeler = MakeLabeling<Self>;
+
             fn labeler() -> Self::Labeler {
                 MakeLabeling::<Self>::default()
             }
@@ -60,8 +61,9 @@ impl<'a> Label for &'a str {
 
 #[cfg(test)]
 mod tests {
-    use super::*;
     use pretty_assertions::assert_eq;
+
+    use super::*;
 
     #[test]
     fn test_unit_labeler() {

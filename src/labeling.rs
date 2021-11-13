@@ -1,9 +1,11 @@
-use crate::Label;
-use pretty_type_name::pretty_type_name;
 use std::borrow::Cow;
 use std::fmt;
 use std::fmt::Debug;
 use std::marker::PhantomData;
+
+use pretty_type_name::pretty_type_name;
+
+use crate::Label;
 
 pub trait Labeling: Debug {
     fn label(&self) -> Cow<'static, str>;
@@ -120,8 +122,9 @@ impl fmt::Display for NoLabeling {
 
 #[cfg(test)]
 mod tests {
-    use super::*;
     use pretty_assertions::{assert_eq, assert_ne};
+
+    use super::*;
 
     struct Foo;
     struct Zed;

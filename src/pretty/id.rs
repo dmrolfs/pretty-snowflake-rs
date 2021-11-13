@@ -3,13 +3,19 @@ use std::fmt;
 use std::hash::{Hash, Hasher};
 use std::marker::PhantomData;
 
-use crate::{Label, Labeling};
-use serde::{Deserialize, Serialize};
+use pretty_type_name::pretty_type_name;
+use serde::de::{self, Deserialize, MapAccess, SeqAccess, Visitor};
+use serde::ser::{Serialize, SerializeStruct, Serializer};
+use serde::Deserializer;
 
 use crate::pretty::codec::Codec;
 use crate::pretty::prettifier::IdPrettifier;
+use crate::{Label, Labeling};
 
-#[derive(Serialize, Deserialize)]
+const ID_SNOWFLAKE: &'static str = "snowflake";
+const ID_PRETTY: &'static str = "pretty";
+const FIELDS: [&'static str; 2] = [ID_SNOWFLAKE, ID_PRETTY];
+
 pub struct Id<T> {
     pub label: String,
     snowflake: i64,
@@ -122,10 +128,125 @@ impl<T> Hash for Id<T> {
     }
 }
 
+impl<T> Serialize for Id<T> {
+    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
+    where
+        S: Serializer,
+    {
+        let mut state = serializer.serialize_struct("Id", 2)?;
+        state.serialize_field(ID_SNOWFLAKE, &self.snowflake)?;
+        state.serialize_field(ID_PRETTY, &self.pretty)?;
+        state.end()
+    }
+}
+
+impl<'de, T: Label> Deserialize<'de> for Id<T> {
+    fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
+    where
+        D: Deserializer<'de>,
+    {
+        enum Field {
+            Snowflake,
+            Pretty,
+        }
+
+        impl<'de> Deserialize<'de> for Field {
+            fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
+            where
+                D: Deserializer<'de>,
+            {
+                struct FieldVisitor;
+
+                impl<'de> Visitor<'de> for FieldVisitor {
+                    type Value = Field;
+
+                    fn expecting(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+                        f.write_str("`snowflake` or `pretty`")
+                    }
+
+                    fn visit_str<E>(self, value: &str) -> Result<Field, E>
+                    where
+                        E: de::Error,
+                    {
+                        match value {
+                            ID_SNOWFLAKE => Ok(Self::Value::Snowflake),
+                            ID_PRETTY => Ok(Self::Value::Pretty),
+                            _ => Err(de::Error::unknown_field(value, &FIELDS)),
+                        }
+                    }
+                }
+
+                deserializer.deserialize_identifier(FieldVisitor)
+            }
+        }
+
+        struct IdVisitor<T> {
+            marker: PhantomData<T>,
+        }
+
+        impl<T> IdVisitor<T> {
+            pub fn new() -> Self {
+                Self { marker: PhantomData }
+            }
+        }
+
+        impl<'de, T: Label> Visitor<'de> for IdVisitor<T> {
+            type Value = Id<T>;
+
+            fn expecting(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+                f.write_str(format!("struct Id<{}>", pretty_type_name::<T>()).as_str())
+            }
+
+            fn visit_seq<V>(self, mut seq: V) -> Result<Self::Value, V::Error>
+            where
+                V: SeqAccess<'de>,
+            {
+                let snowflake: i64 = seq.next_element()?.ok_or_else(|| de::Error::invalid_length(0, &self))?;
+                let pretty: String = seq.next_element()?.ok_or_else(|| de::Error::invalid_length(1, &self))?;
+                let labeler = <T as Label>::labeler();
+                let label = labeler.label();
+                Ok(Id::direct(label, snowflake, pretty))
+            }
+
+            fn visit_map<V>(self, mut map: V) -> Result<Self::Value, V::Error>
+            where
+                V: MapAccess<'de>,
+            {
+                let mut snowflake = None;
+                let mut pretty = None;
+                while let Some(key) = map.next_key()? {
+                    match key {
+                        Field::Snowflake => {
+                            if snowflake.is_some() {
+                                return Err(de::Error::duplicate_field(ID_SNOWFLAKE));
+                            }
+                            snowflake = Some(map.next_value()?);
+                        },
+                        Field::Pretty => {
+                            if pretty.is_some() {
+                                return Err(de::Error::duplicate_field(ID_PRETTY));
+                            }
+                            pretty = Some(map.next_value()?);
+                        },
+                    }
+                }
+
+                let snowflake: i64 = snowflake.ok_or_else(|| de::Error::missing_field(ID_SNOWFLAKE))?;
+                let pretty: String = pretty.ok_or_else(|| de::Error::missing_field(ID_PRETTY))?;
+                let labeler = <T as Label>::labeler();
+                let label = labeler.label();
+                Ok(Id::direct(label, snowflake, pretty))
+            }
+        }
+
+        deserializer.deserialize_struct("Id", &FIELDS, IdVisitor::<T>::new())
+    }
+}
 #[cfg(test)]
 mod tests {
-    use crate::{AlphabetCodec, Id, IdPrettifier, Label, LabeledRealtimeIdGenerator, MakeLabeling, PrettyIdGenerator};
     use pretty_assertions::assert_eq;
+
+    use crate::{AlphabetCodec, Id, IdPrettifier, Label, LabeledRealtimeIdGenerator, MakeLabeling, PrettyIdGenerator};
 
     struct Foo;
     impl Label for Foo {

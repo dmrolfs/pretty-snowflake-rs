@@ -3,14 +3,14 @@ mod label;
 mod labeling;
 mod pretty;
 
+use std::cmp::Ordering;
+use std::fmt;
+
 pub use generator::{Generator, IdGenerator, LazyGenerator, RealTimeGenerator, SnowflakeIdGenerator};
 pub use label::Label;
 pub use labeling::{CustomLabeling, Labeling, MakeLabeling, NoLabeling};
 pub use pretty::{Alphabet, AlphabetCodec, Codec, Id, IdPrettifier, PrettyIdGenerator};
-
 use serde::{Deserialize, Serialize};
-use std::cmp::Ordering;
-use std::fmt;
 use validator::{Validate, ValidationErrors};
 
 pub type LabeledRealtimeIdGenerator<T> = PrettyIdGenerator<T, <T as Label>::Labeler, RealTimeGenerator, AlphabetCodec>;
