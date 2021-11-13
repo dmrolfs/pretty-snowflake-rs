@@ -8,7 +8,9 @@ pub use id::Id;
 pub use prettifier::IdPrettifier;
 use serde::__private::PhantomData;
 
-use crate::{IdGenerator, Label, Labeling, MachineNode, SnowflakeIdGenerator};
+use crate::{
+    Generator, IdGenerator, Label, Labeling, LazyGenerator, MachineNode, RealTimeGenerator, SnowflakeIdGenerator,
+};
 
 #[derive(Debug, Clone)]
 pub struct PrettyIdGenerator<T, L, G, C>
@@ -21,6 +23,42 @@ where
     prettifier: IdPrettifier<C>,
     labeling: L,
     marker: PhantomData<T>,
+}
+
+impl<T: Label> Default for PrettyIdGenerator<T, <T as Label>::Labeler, RealTimeGenerator, AlphabetCodec> {
+    fn default() -> Self {
+        Self::single_node(IdPrettifier::default())
+    }
+}
+
+impl<T: Label> PrettyIdGenerator<T, <T as Label>::Labeler, RealTimeGenerator, AlphabetCodec> {
+    pub fn distributed_realtime(machine_node: MachineNode) -> Self {
+        Self::distributed(machine_node, IdPrettifier::default())
+    }
+}
+
+impl<T: Label> Default for PrettyIdGenerator<T, <T as Label>::Labeler, Generator, AlphabetCodec> {
+    fn default() -> Self {
+        Self::single_node(IdPrettifier::default())
+    }
+}
+
+impl<T: Label> PrettyIdGenerator<T, <T as Label>::Labeler, Generator, AlphabetCodec> {
+    pub fn distributed_basic(machine_node: MachineNode) -> Self {
+        Self::distributed(machine_node, IdPrettifier::default())
+    }
+}
+
+impl<T: Label> Default for PrettyIdGenerator<T, <T as Label>::Labeler, LazyGenerator, AlphabetCodec> {
+    fn default() -> Self {
+        Self::single_node(IdPrettifier::default())
+    }
+}
+
+impl<T: Label> PrettyIdGenerator<T, <T as Label>::Labeler, LazyGenerator, AlphabetCodec> {
+    pub fn distributed_lazy(machine_node: MachineNode) -> Self {
+        Self::distributed(machine_node, IdPrettifier::default())
+    }
 }
 
 impl<T, G, C> PrettyIdGenerator<T, <T as Label>::Labeler, G, C>
