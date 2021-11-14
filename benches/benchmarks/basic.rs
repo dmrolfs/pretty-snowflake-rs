@@ -58,7 +58,7 @@ fn bench_generate_lazy_pretty(c: &mut Criterion) {
 criterion_group! {
     name = basic;
     config = Criterion::default().with_profiler(super::super::profiler::FlamegraphProfiler::new(100));
-    targets = 
+    targets =
         bench_generate_real_time_snowflake,
         bench_generate_generator_snowflake,
         bench_generate_lazy_snowflake,

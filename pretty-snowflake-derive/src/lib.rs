@@ -6,9 +6,9 @@ use syn::DeriveInput;
 pub fn label_derive(input: TokenStream) -> TokenStream {
     let DeriveInput { ident, .. } = syn::parse_macro_input!(input);
     let output = quote! {
-        impl Label for #ident {
-            type Labeler = MakeLabeling<Self>;
-            fn labeler() -> Self::Labeler { MakeLabeling::default() }
+        impl pretty_snowflake::Label for #ident {
+            type Labeler = pretty_snowflake::MakeLabeling<Self>;
+            fn labeler() -> Self::Labeler { pretty_snowflake::MakeLabeling::default() }
         }
     };
     output.into()

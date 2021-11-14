@@ -10,8 +10,8 @@ use serde::Deserializer;
 
 use crate::pretty::codec::Codec;
 use crate::pretty::prettifier::IdPrettifier;
+use crate::snowflake::Id as SnowflakeId;
 use crate::{Label, Labeling};
-use crate::snowflake::{Id as SnowflakeId};
 
 const ID_SNOWFLAKE: &'static str = "snowflake";
 const ID_PRETTY: &'static str = "pretty";
@@ -26,24 +26,18 @@ pub struct Id<T> {
 
 impl<T> Id<T> {
     pub fn new<C: Codec>(
-        label: impl Into<String>,
-        snowflake: impl Into<SnowflakeId>,
-        prettifier: &IdPrettifier<C>
+        label: impl Into<String>, snowflake: impl Into<SnowflakeId>, prettifier: &IdPrettifier<C>,
     ) -> Self {
         let snowflake: SnowflakeId = snowflake.into();
         Self {
             label: label.into(),
-            snowflake: snowflake,
+            snowflake,
             pretty: prettifier.prettify(snowflake),
             marker: PhantomData,
         }
     }
 
-    pub fn direct(
-        label: impl Into<String>,
-        snowflake: impl Into<SnowflakeId>,
-        pretty: impl Into<String>
-    ) -> Self {
+    pub fn direct(label: impl Into<String>, snowflake: impl Into<SnowflakeId>, pretty: impl Into<String>) -> Self {
         Self {
             label: label.into(),
             snowflake: snowflake.into(),
@@ -262,13 +256,20 @@ impl<'de, T: Label> Deserialize<'de> for Id<T> {
 mod tests {
     use pretty_assertions::assert_eq;
 
-    use crate::{AlphabetCodec, Id, IdPrettifier, Label, LabeledRealtimeIdGenerator, MakeLabeling, PrettyIdGenerator};
+    use super::*;
+    use crate::{AlphabetCodec, LabeledRealtimeIdGenerator, MakeLabeling};
 
-    #[derive(Label)]
     struct Foo;
+    impl Label for Foo {
+        type Labeler = MakeLabeling<Self>;
+
+        fn labeler() -> Self::Labeler {
+            MakeLabeling::default()
+        }
+    }
 
     fn make_generator<T: Label>() -> LabeledRealtimeIdGenerator<T> {
-        PrettyIdGenerator::single_node(IdPrettifier::<AlphabetCodec>::default())
+        crate::PrettyIdGenerator::single_node(IdPrettifier::<AlphabetCodec>::default())
     }
 
     #[test]

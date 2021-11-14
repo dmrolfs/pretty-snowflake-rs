@@ -6,20 +6,21 @@ extern crate pretty_snowflake_derive;
 #[doc(hidden)]
 pub use pretty_snowflake_derive::*;
 
-mod snowflake;
 mod label;
 mod labeling;
 mod pretty;
+mod snowflake;
 
 use std::cmp::Ordering;
 use std::fmt;
 
-pub use crate::snowflake::{Generator, IdGenerator, LazyGenerator, RealTimeGenerator, SnowflakeIdGenerator};
 pub use label::Label;
 pub use labeling::{CustomLabeling, Labeling, MakeLabeling, NoLabeling};
 pub use pretty::{Alphabet, AlphabetCodec, Codec, Id, IdPrettifier, PrettyIdGenerator};
 use serde::{Deserialize, Serialize};
 use validator::{Validate, ValidationErrors};
+
+pub use crate::snowflake::{Generator, IdGenerator, LazyGenerator, RealTimeGenerator, SnowflakeIdGenerator};
 
 pub type LabeledRealtimeIdGenerator<T> = PrettyIdGenerator<T, <T as Label>::Labeler, RealTimeGenerator, AlphabetCodec>;
 pub type LabeledBasicIdGenerator<T> = PrettyIdGenerator<T, <T as Label>::Labeler, Generator, AlphabetCodec>;

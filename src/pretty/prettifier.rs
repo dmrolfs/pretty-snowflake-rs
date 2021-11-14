@@ -5,7 +5,7 @@ use thiserror::Error;
 
 use super::damm;
 use crate::pretty::codec::Codec;
-use crate::snowflake::{Id as SnowflakeId};
+use crate::snowflake::Id as SnowflakeId;
 
 #[derive(Debug, Error)]
 pub enum ConversionError {

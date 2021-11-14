@@ -1,7 +1,7 @@
 use claim::*;
 use pretty_assertions::assert_eq;
 use pretty_snowflake::{
-    Alphabet, AlphabetCodec, Id, IdPrettifier, Label, LabeledRealtimeIdGenerator, MakeLabeling, PrettyIdGenerator,
+    Alphabet, AlphabetCodec, Id, IdPrettifier, Label, LabeledRealtimeIdGenerator, PrettyIdGenerator,
 };
 use regex::Regex;
 

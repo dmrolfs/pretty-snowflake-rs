@@ -1,9 +1,10 @@
 use std::cmp::Ordering;
+use std::fmt;
 use std::hash::{Hash, Hasher};
 use std::marker::PhantomData;
-use serde::{Serialize, Deserialize};
-use std::fmt;
 use std::str::FromStr;
+
+use serde::{Deserialize, Serialize};
 use snowflake::SnowflakeIdGenerator as Worker;
 
 use crate::MachineNode;
