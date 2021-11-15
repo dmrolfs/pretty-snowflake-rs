@@ -10,6 +10,7 @@ use snowflake::SnowflakeIdGenerator as Worker;
 use crate::MachineNode;
 
 #[derive(Default, Copy, Clone, PartialEq, Eq, PartialOrd, Ord, Hash, Serialize, Deserialize)]
+#[serde(transparent)]
 pub struct Id(i64);
 
 impl fmt::Debug for Id {
@@ -134,5 +135,20 @@ impl<G> PartialOrd for SnowflakeIdGenerator<G> {
 impl<G> Hash for SnowflakeIdGenerator<G> {
     fn hash<H: Hasher>(&self, state: &mut H) {
         self.machine_node.hash(state);
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use serde_test::*;
+
+    use super::*;
+
+    #[test]
+    fn test_snowflake_id_serde() {
+        let mut gen = SnowflakeIdGenerator::<RealTimeGenerator>::default();
+        let id = gen.next_id();
+        let id_value = id.0;
+        assert_tokens(&id, &[Token::I64(id_value)]);
     }
 }
