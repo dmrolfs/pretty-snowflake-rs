@@ -21,16 +21,10 @@ impl AlphabetCodec {
     }
 }
 
-#[derive(Debug)]
+#[derive(Debug, Default)]
 struct ResultWithIndex {
     pub result: i64,
     pub pos: usize,
-}
-
-impl Default for ResultWithIndex {
-    fn default() -> Self {
-        Self { result: 0, pos: 0 }
-    }
 }
 
 impl ResultWithIndex {

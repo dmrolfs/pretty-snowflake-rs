@@ -41,7 +41,7 @@ impl<C: Codec + Default> Default for IdPrettifier<C> {
         let zero_char = encoder
             .encode(0)
             .get(0..=0)
-            .and_then(|s| s.chars().nth(0))
+            .and_then(|s| s.chars().next())
             .expect("failed to encode zero character");
         let max_encoder_length = encoder.encode(10_i64.pow(parts_size as u32) - 1_i64).len();
         Self {
@@ -74,6 +74,7 @@ impl<C: Codec> IdPrettifier<C> {
         let mut parts = Vec::with_capacity(rep.len() / self.parts_size + 1);
 
         for p in &rep.chars().rev().chunks(self.parts_size) {
+            #[allow(clippy::needless_collect)]
             let sub_parts: Vec<char> = p.collect();
             let part: String = sub_parts.into_iter().rev().collect();
             parts.push(part);
@@ -97,7 +98,7 @@ impl<C: Codec> IdPrettifier<C> {
         if damm::is_valid(&decoded_with_check_digit) {
             decoded_with_check_digit
                 .get(..(decoded_with_check_digit.len() - 1))
-                .ok_or(ConversionError::InvalidId(rep.to_string()))
+                .ok_or_else(|| ConversionError::InvalidId(rep.to_string()))
                 .and_then(|decoded| SnowflakeId::from_str(decoded).map_err(|err| err.into()))
         } else {
             Err(ConversionError::InvalidId(rep.to_string()))
@@ -127,10 +128,9 @@ impl<C: Codec> IdPrettifier<C> {
                     .encoder
                     .encode(i64::from_str(&part).expect("failed to parse part of id into number"));
 
-                let encoded_with_leading = self.convert_with_leading_zeros(encoded, |e| {
+                self.convert_with_leading_zeros(encoded, |e| {
                     Self::add_leading_zeros(e, self.zero_char, self.max_encoder_length)
-                });
-                encoded_with_leading
+                })
             };
             acc.push(converted_part);
             acc

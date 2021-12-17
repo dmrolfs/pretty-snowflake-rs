@@ -13,9 +13,9 @@ use crate::pretty::prettifier::IdPrettifier;
 use crate::snowflake::Id as SnowflakeId;
 use crate::{Label, Labeling};
 
-const ID_SNOWFLAKE: &'static str = "snowflake";
-const ID_PRETTY: &'static str = "pretty";
-const FIELDS: [&'static str; 2] = [ID_SNOWFLAKE, ID_PRETTY];
+const ID_SNOWFLAKE: &str = "snowflake";
+const ID_PRETTY: &str = "pretty";
+const FIELDS: [&str; 2] = [ID_SNOWFLAKE, ID_PRETTY];
 
 pub struct Id<T> {
     pub label: String,
@@ -94,23 +94,38 @@ impl<T> fmt::Display for Id<T> {
     }
 }
 
-impl<T> Into<SnowflakeId> for Id<T> {
-    fn into(self) -> SnowflakeId {
-        self.snowflake
+impl<T> From<Id<T>> for SnowflakeId {
+    fn from(id: Id<T>) -> Self {
+        id.snowflake
     }
 }
+// impl<T> Into<SnowflakeId> for Id<T> {
+//     fn into(self) -> SnowflakeId {
+//         self.snowflake
+//     }
+// }
 
-impl<T> Into<i64> for Id<T> {
-    fn into(self) -> i64 {
-        self.snowflake.into()
+impl<T> From<Id<T>> for i64 {
+    fn from(id: Id<T>) -> Self {
+        id.snowflake.into()
     }
 }
+// impl<T> Into<i64> for Id<T> {
+//     fn into(self) -> i64 {
+//         self.snowflake.into()
+//     }
+// }
 
-impl<T> Into<String> for Id<T> {
-    fn into(self) -> String {
-        self.pretty
+impl<T> From<Id<T>> for String {
+    fn from(id: Id<T>) -> Self {
+        id.pretty
     }
 }
+// impl<T> Into<String> for Id<T> {
+//     fn into(self) -> String {
+//         self.pretty
+//     }
+// }
 
 impl<T> PartialEq for Id<T> {
     fn eq(&self, other: &Self) -> bool {
