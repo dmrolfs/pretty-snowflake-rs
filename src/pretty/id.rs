@@ -99,33 +99,18 @@ impl<T> From<Id<T>> for SnowflakeId {
         id.snowflake
     }
 }
-// impl<T> Into<SnowflakeId> for Id<T> {
-//     fn into(self) -> SnowflakeId {
-//         self.snowflake
-//     }
-// }
 
 impl<T> From<Id<T>> for i64 {
     fn from(id: Id<T>) -> Self {
         id.snowflake.into()
     }
 }
-// impl<T> Into<i64> for Id<T> {
-//     fn into(self) -> i64 {
-//         self.snowflake.into()
-//     }
-// }
 
 impl<T> From<Id<T>> for String {
     fn from(id: Id<T>) -> Self {
         id.pretty
     }
 }
-// impl<T> Into<String> for Id<T> {
-//     fn into(self) -> String {
-//         self.pretty
-//     }
-// }
 
 impl<T> PartialEq for Id<T> {
     fn eq(&self, other: &Self) -> bool {
