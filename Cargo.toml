@@ -12,7 +12,7 @@ separator or don't use leading zeros to provide fixed length.\
 """
 edition = "2021"
 repository = "https://github.com/dmrolfs/pretty-snowflake-rs"
-readmo = "README.md"
+readme = "README.md"
 license = "MIT"
 keywords = ["id", "snowflake", "uid", "distruted-id", "twitter"]
 categories = ["Algorithms", "Data structures", "Development tools"]
