@@ -37,7 +37,7 @@ impl From<Id> for i64 {
 
 impl From<i64> for Id {
     fn from(id: i64) -> Self {
-        Id(id)
+        Self(id)
     }
 }
 
@@ -48,7 +48,6 @@ impl FromStr for Id {
         Ok(i64::from_str(rep)?.into())
     }
 }
-
 
 pub trait IdGenerator {
     fn next_id(worker: &mut Worker) -> Id;

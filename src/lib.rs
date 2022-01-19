@@ -1,3 +1,13 @@
+#![forbid(unsafe_code)]
+#![warn(
+clippy::cargo,
+// missing_docs,
+clippy::nursery,
+// clippy::pedantic,
+future_incompatible,
+rust_2018_idioms
+)]
+
 #[cfg(feature = "derive")]
 #[allow(unused_imports)]
 #[macro_use]

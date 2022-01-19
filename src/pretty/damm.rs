@@ -7,6 +7,7 @@ pub fn encode(rep: &str) -> String {
     base
 }
 
+#[allow(dead_code)]
 pub fn decode(rep: &str) -> Option<&str> {
     if is_valid(rep) {
         rep.get(..(rep.len() - 1))

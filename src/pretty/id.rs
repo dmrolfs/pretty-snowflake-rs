@@ -195,7 +195,7 @@ impl<'de, T: Label> Deserialize<'de> for Id<T> {
         }
 
         impl<T> IdVisitor<T> {
-            pub fn new() -> Self {
+            pub const fn new() -> Self {
                 Self { marker: PhantomData }
             }
         }

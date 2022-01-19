@@ -31,14 +31,14 @@ pub struct CustomLabeling {
 pub struct NoLabeling;
 
 impl<T: ?Sized> MakeLabeling<T> {
-    pub fn new() -> Self {
+    pub const fn new() -> Self {
         Self { marker: PhantomData }
     }
 }
 
 impl<T: ?Sized> Default for MakeLabeling<T> {
     fn default() -> Self {
-        MakeLabeling::new()
+        Self::new()
     }
 }
 

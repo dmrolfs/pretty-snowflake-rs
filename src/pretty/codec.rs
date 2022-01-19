@@ -11,12 +11,12 @@ pub struct AlphabetCodec(Alphabet);
 
 impl Default for AlphabetCodec {
     fn default() -> Self {
-        AlphabetCodec::new(BASE_23.clone())
+        Self::new(BASE_23.clone())
     }
 }
 
 impl AlphabetCodec {
-    pub fn new(alphabet: Alphabet) -> Self {
+    pub const fn new(alphabet: Alphabet) -> Self {
         Self(alphabet)
     }
 }
@@ -28,7 +28,7 @@ struct ResultWithIndex {
 }
 
 impl ResultWithIndex {
-    pub fn increment_w_result(self, result: i64) -> Self {
+    pub const fn increment_w_result(self, result: i64) -> Self {
         Self { result, pos: self.pos + 1 }
     }
 }
