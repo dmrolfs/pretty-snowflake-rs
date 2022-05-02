@@ -136,18 +136,3 @@ impl<G> Hash for SnowflakeIdGenerator<G> {
         self.machine_node.hash(state);
     }
 }
-
-#[cfg(test)]
-mod tests {
-    use serde_test::*;
-
-    use super::*;
-
-    #[test]
-    fn test_snowflake_id_serde() {
-        let mut gen = SnowflakeIdGenerator::<RealTimeGenerator>::default();
-        let id = gen.next_id();
-        let id_value = id.0;
-        assert_tokens(&id, &[Token::I64(id_value)]);
-    }
-}

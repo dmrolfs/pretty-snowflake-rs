@@ -55,6 +55,14 @@ impl<T> Id<T> {
             marker: PhantomData,
         }
     }
+
+    pub fn pretty(&self) -> &str {
+        &self.pretty
+    }
+
+    pub fn num(&self) -> i64 {
+        self.snowflake.into()
+    }
 }
 
 impl<T> Clone for Id<T> {
@@ -250,79 +258,5 @@ impl<'de, T: Label> Deserialize<'de> for Id<T> {
         }
 
         deserializer.deserialize_struct("Id", &FIELDS, IdVisitor::<T>::new())
-    }
-}
-#[cfg(test)]
-mod tests {
-    use pretty_assertions::assert_eq;
-
-    use super::*;
-    use crate::{AlphabetCodec, LabeledRealtimeIdGenerator, MakeLabeling};
-
-    struct Foo;
-    impl Label for Foo {
-        type Labeler = MakeLabeling<Self>;
-
-        fn labeler() -> Self::Labeler {
-            MakeLabeling::default()
-        }
-    }
-
-    fn make_generator<T: Label>() -> LabeledRealtimeIdGenerator<T> {
-        crate::PrettyIdGenerator::single_node(IdPrettifier::<AlphabetCodec>::default())
-    }
-
-    #[test]
-    fn test_partial_ord() {
-        let mut generator = make_generator::<()>();
-        let a = generator.next_id();
-        let b = generator.next_id();
-        assert!(a < b);
-    }
-
-    #[test]
-    fn test_display() {
-        let mut generator = make_generator();
-        let a: Id<Foo> = generator.next_id();
-        assert_eq!(format!("{}", a), a.pretty);
-    }
-
-    #[test]
-    fn test_alternate_display() {
-        let mut generator = make_generator();
-        let a: Id<i64> = generator.next_id();
-        assert_eq!(format!("{:#}", a), a.snowflake.to_string());
-    }
-
-    #[test]
-    fn test_debug() {
-        let mut generator = make_generator();
-        let a: Id<Foo> = generator.next_id();
-        assert_eq!(format!("{:?}", a), format!("Foo::{}", a.pretty));
-    }
-
-    #[test]
-    fn test_alternate_debug() {
-        let mut generator = make_generator();
-        let a: Id<Foo> = generator.next_id();
-        assert_eq!(
-            format!("{:#?}", a),
-            format!(
-                "Id {{\n    label: \"{}\",\n    snowflake: Id({}),\n    pretty: \"{}\",\n}}",
-                a.label, a.snowflake, a.pretty
-            )
-        );
-    }
-
-    #[test]
-    fn test_id_cross_conversion() {
-        let mut generator = make_generator();
-        let a: Id<String> = generator.next_id();
-        let before = format!("{:?}", a);
-        assert_eq!(format!("String::{}", a.pretty), before);
-
-        let b: Id<usize> = a.relabel();
-        let after = format!("{:?}", b);
-        assert_eq!(format!("usize::{}", b.pretty), after);
     }
 }

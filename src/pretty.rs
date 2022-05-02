@@ -1,3 +1,6 @@
+#[cfg(test)]
+mod tests;
+
 mod codec;
 mod damm;
 mod id;
@@ -121,40 +124,41 @@ where
     }
 }
 
-#[cfg(test)]
-mod tests {
-    use pretty_assertions::assert_eq;
-
-    use super::*;
-    use crate::{CustomLabeling, LazyGenerator};
-
-    struct NonLabelZed;
-
-    struct Foo;
-
-    impl Label for Foo {
-        type Labeler = CustomLabeling;
-
-        fn labeler() -> Self::Labeler {
-            CustomLabeling::new("MyFooferNut")
-        }
-    }
-
-    #[test]
-    fn test_non_label_custom_generator() {
-        let mut gen: PrettyIdGenerator<NonLabelZed, CustomLabeling, LazyGenerator, AlphabetCodec> =
-            PrettyIdGenerator::single_node_labeling(CustomLabeling::new("Zedster"), IdPrettifier::default());
-
-        let actual = gen.next_id();
-        assert_eq!(format!("{:?}", actual), format!("Zedster::{}", actual))
-    }
-
-    #[test]
-    fn test_labeled_generator() {
-        let mut gen: PrettyIdGenerator<Foo, CustomLabeling, LazyGenerator, AlphabetCodec> =
-            PrettyIdGenerator::single_node(IdPrettifier::default());
-
-        let actual = gen.next_id();
-        assert_eq!(format!("{:?}", actual), format!("MyFooferNut::{}", actual))
-    }
-}
+// #[cfg(test)]
+// mod tests {
+//     use pretty_assertions::assert_eq;
+//
+//     use super::*;
+//     use crate::{CustomLabeling, LazyGenerator};
+//
+//     struct NonLabelZed;
+//
+//     struct Foo;
+//
+//     impl Label for Foo {
+//         type Labeler = CustomLabeling;
+//
+//         fn labeler() -> Self::Labeler {
+//             CustomLabeling::new("MyFooferNut")
+//         }
+//     }
+//
+//     #[test]
+//     fn test_non_label_custom_generator() {
+//         let mut gen: PrettyIdGenerator<NonLabelZed, CustomLabeling, LazyGenerator, AlphabetCodec>
+// =             PrettyIdGenerator::single_node_labeling(CustomLabeling::new("Zedster"),
+// IdPrettifier::default());
+//
+//         let actual = gen.next_id();
+//         assert_eq!(format!("{:?}", actual), format!("Zedster::{}", actual))
+//     }
+//
+//     #[test]
+//     fn test_labeled_generator() {
+//         let mut gen: PrettyIdGenerator<Foo, CustomLabeling, LazyGenerator, AlphabetCodec> =
+//             PrettyIdGenerator::single_node(IdPrettifier::default());
+//
+//         let actual = gen.next_id();
+//         assert_eq!(format!("{:?}", actual), format!("MyFooferNut::{}", actual))
+//     }
+// }

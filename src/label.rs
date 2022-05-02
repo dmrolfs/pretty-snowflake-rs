@@ -58,29 +58,3 @@ impl<'a> Label for &'a str {
         MakeLabeling::<Self>::default()
     }
 }
-
-#[cfg(test)]
-mod tests {
-    use pretty_assertions::assert_eq;
-
-    use super::*;
-
-    #[test]
-    fn test_unit_labeler() {
-        let actual = <dyn Labeling>::summon::<()>();
-        assert_eq!(actual.label().as_ref(), "");
-    }
-
-    #[test]
-    fn test_i64_labeler() {
-        let l = i64::labeler();
-        let actual = l.label();
-        assert_eq!(actual.as_ref(), "i64");
-    }
-
-    #[test]
-    fn test_str_labeler() {
-        let actual = <dyn Labeling>::summon::<&str>().label();
-        assert_eq!(actual.as_ref(), "&str");
-    }
-}

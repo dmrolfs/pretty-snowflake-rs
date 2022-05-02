@@ -92,30 +92,3 @@ impl Alphabet {
         pos.expect("failed to id character in alphabet")
     }
 }
-
-#[cfg(test)]
-mod tests {
-    use pretty_assertions::assert_eq;
-
-    use super::*;
-
-    static CODEC: Lazy<AlphabetCodec> = Lazy::new(|| AlphabetCodec::default());
-
-    #[test]
-    fn test_encode_value() {
-        assert_eq!(CODEC.encode(23), "BA".to_string());
-        assert_eq!(CODEC.encode(529), "BAA".to_string());
-        assert_eq!(CODEC.encode(12167), "BAAA".to_string());
-    }
-
-    #[test]
-    fn test_decode_value() {
-        assert_eq!(CODEC.decode("BA"), 23);
-        assert_eq!(CODEC.decode("ABA"), 23);
-        assert_eq!(CODEC.decode("BAA"), 529);
-        assert_eq!(CODEC.decode("BAB"), 530);
-        assert_eq!(CODEC.decode("BAAA"), 12167);
-        assert_eq!(CODEC.decode("HAPK"), 85477);
-        assert_eq!(CODEC.decode("HPJD"), 92233);
-    }
-}

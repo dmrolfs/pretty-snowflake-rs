@@ -16,6 +16,9 @@ extern crate pretty_snowflake_derive;
 #[doc(hidden)]
 pub use pretty_snowflake_derive::*;
 
+#[cfg(test)]
+mod tests;
+
 mod label;
 mod labeling;
 mod pretty;
