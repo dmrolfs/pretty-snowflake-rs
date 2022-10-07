@@ -150,7 +150,7 @@ mod id {
             format!("{a:#?}"),
             format!(
                 "Id {{\n    label: \"{}\",\n    snowflake: Id({}),\n    pretty: \"{}\",\n}}",
-                a.label,
+                a.label(),
                 a.num(),
                 a.pretty()
             )

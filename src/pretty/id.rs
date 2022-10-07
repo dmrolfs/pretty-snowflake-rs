@@ -7,6 +7,7 @@ use pretty_type_name::pretty_type_name;
 use serde::de::{self, Deserialize, MapAccess, SeqAccess, Visitor};
 use serde::ser::{Serialize, SerializeStruct, Serializer};
 use serde::Deserializer;
+use smol_str::SmolStr;
 
 use crate::pretty::codec::Codec;
 use crate::pretty::prettifier::IdPrettifier;
@@ -18,30 +19,30 @@ const ID_PRETTY: &str = "pretty";
 const FIELDS: [&str; 2] = [ID_SNOWFLAKE, ID_PRETTY];
 
 pub struct Id<T> {
-    pub label: String,
+    label: SmolStr,
     snowflake: SnowflakeId,
-    pretty: String, // todo: convert into [char; N] form to support Cpy semantics
+    pretty: SmolStr, // todo: convert into [char; N] form to support Cpy semantics
     marker: PhantomData<T>,
 }
 
 impl<T> Id<T> {
     pub fn new<C: Codec>(
-        label: impl Into<String>, snowflake: impl Into<SnowflakeId>, prettifier: &IdPrettifier<C>,
+        label: impl AsRef<str>, snowflake: impl Into<SnowflakeId>, prettifier: &IdPrettifier<C>,
     ) -> Self {
         let snowflake: SnowflakeId = snowflake.into();
         Self {
-            label: label.into(),
+            label: SmolStr::new_inline(label.as_ref()),
             snowflake,
-            pretty: prettifier.prettify(snowflake),
+            pretty: SmolStr::new_inline(&prettifier.prettify(snowflake)),
             marker: PhantomData,
         }
     }
 
-    pub fn direct(label: impl Into<String>, snowflake: impl Into<SnowflakeId>, pretty: impl Into<String>) -> Self {
+    pub fn direct(label: impl AsRef<str>, snowflake: impl Into<SnowflakeId>, pretty: impl AsRef<str>) -> Self {
         Self {
-            label: label.into(),
+            label: SmolStr::new_inline(label.as_ref()),
             snowflake: snowflake.into(),
-            pretty: pretty.into(),
+            pretty: SmolStr::new_inline(pretty.as_ref()),
             marker: PhantomData,
         }
     }
@@ -49,17 +50,24 @@ impl<T> Id<T> {
     pub fn relabel<B: Label>(&self) -> Id<B> {
         let b_labeler = B::labeler();
         Id {
-            label: b_labeler.label().into_owned(),
+            label: SmolStr::new_inline(b_labeler.label().as_ref()),
             snowflake: self.snowflake,
             pretty: self.pretty.clone(),
             marker: PhantomData,
         }
     }
 
-    pub fn pretty(&self) -> &str {
-        &self.pretty
+    #[inline]
+    pub fn label(&self) -> &str {
+        self.label.as_str()
     }
 
+    #[inline]
+    pub fn pretty(&self) -> &str {
+        self.pretty.as_str()
+    }
+
+    #[inline]
     pub fn num(&self) -> i64 {
         self.snowflake.into()
     }
@@ -116,7 +124,7 @@ impl<T> From<Id<T>> for i64 {
 
 impl<T> From<Id<T>> for String {
     fn from(id: Id<T>) -> Self {
-        id.pretty
+        id.pretty.to_string()
     }
 }
 

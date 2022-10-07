@@ -11,6 +11,7 @@ use crate::MachineNode;
 
 #[derive(Default, Copy, Clone, PartialEq, Eq, PartialOrd, Ord, Hash, Serialize, Deserialize)]
 #[serde(transparent)]
+#[repr(transparent)]
 pub struct Id(i64);
 
 impl fmt::Debug for Id {
