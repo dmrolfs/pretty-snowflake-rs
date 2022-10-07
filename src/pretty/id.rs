@@ -31,7 +31,7 @@ impl<T> Id<T> {
     ) -> Self {
         let snowflake: SnowflakeId = snowflake.into();
         Self {
-            label: SmolStr::new_inline(label.as_ref()),
+            label: SmolStr::new(label.as_ref()),
             snowflake,
             pretty: SmolStr::new_inline(&prettifier.prettify(snowflake)),
             marker: PhantomData,
@@ -40,7 +40,7 @@ impl<T> Id<T> {
 
     pub fn direct(label: impl AsRef<str>, snowflake: impl Into<SnowflakeId>, pretty: impl AsRef<str>) -> Self {
         Self {
-            label: SmolStr::new_inline(label.as_ref()),
+            label: SmolStr::new(label.as_ref()),
             snowflake: snowflake.into(),
             pretty: SmolStr::new_inline(pretty.as_ref()),
             marker: PhantomData,
@@ -50,7 +50,7 @@ impl<T> Id<T> {
     pub fn relabel<B: Label>(&self) -> Id<B> {
         let b_labeler = B::labeler();
         Id {
-            label: SmolStr::new_inline(b_labeler.label().as_ref()),
+            label: SmolStr::new(b_labeler.label().as_ref()),
             snowflake: self.snowflake,
             pretty: self.pretty.clone(),
             marker: PhantomData,
