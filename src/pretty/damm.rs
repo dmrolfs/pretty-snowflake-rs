@@ -48,7 +48,7 @@ fn do_checksum(rep: &[u8], interim: usize, idx: usize) -> usize {
         interim
     } else {
         let c = rep[idx] as char;
-        let new_interim = if c.is_digit(10) { MATRIX[interim][c as usize - 48] } else { interim };
+        let new_interim = if c.is_ascii_digit() { MATRIX[interim][c as usize - 48] } else { interim };
         do_checksum(rep, new_interim, idx + 1)
     }
 }

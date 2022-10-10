@@ -13,14 +13,21 @@ impl Label for () {
     }
 }
 
-// used to help implement macro
-// impl Label for i64 {
-//     type Labeler = MakeLabeling<i64>;
-//
-//     fn labeler() -> Self::Labeler {
-//         MakeLabeling::<i64>::default()
-//     }
-// }
+impl<T: Label> Label for Option<T> {
+    type Labeler = <T as Label>::Labeler;
+
+    fn labeler() -> Self::Labeler {
+        <T as Label>::labeler()
+    }
+}
+
+impl<T: Label, E> Label for Result<T, E> {
+    type Labeler = <T as Label>::Labeler;
+
+    fn labeler() -> Self::Labeler {
+        <T as Label>::labeler()
+    }
+}
 
 macro_rules! primitive_label {
     ($i:ty) => {
