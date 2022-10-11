@@ -1,4 +1,5 @@
-use crate::{Labeling, MakeLabeling, NoLabeling};
+use std::collections::HashMap;
+use crate::{CustomLabeling, Labeling, MakeLabeling, NoLabeling};
 
 pub trait Label {
     type Labeler: Labeling + Clone;
@@ -26,6 +27,16 @@ impl<T: Label, E> Label for Result<T, E> {
 
     fn labeler() -> Self::Labeler {
         <T as Label>::labeler()
+    }
+}
+
+impl<K: Label, V: Label> Label for HashMap<K, V> {
+    type Labeler = CustomLabeling;
+
+    fn labeler() -> Self::Labeler {
+        let k_label = <K as Label>::labeler().label();
+        let v_label = <V as Label>::labeler().label();
+        CustomLabeling::from(format!("HashMap<{k_label},{v_label}"))
     }
 }
 
