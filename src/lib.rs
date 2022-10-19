@@ -1,4 +1,3 @@
-#![forbid(unsafe_code)]
 #![warn(
 clippy::cargo,
 // missing_docs,

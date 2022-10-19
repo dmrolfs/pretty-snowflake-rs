@@ -1,5 +1,5 @@
-use std::collections::HashMap;
 use crate::{CustomLabeling, Labeling, MakeLabeling, NoLabeling};
+use std::collections::HashMap;
 
 pub trait Label {
     type Labeler: Labeling + Clone;

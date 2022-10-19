@@ -18,14 +18,14 @@ const ID_SNOWFLAKE: &str = "snowflake";
 const ID_PRETTY: &str = "pretty";
 const FIELDS: [&str; 2] = [ID_SNOWFLAKE, ID_PRETTY];
 
-pub struct Id<T> {
+pub struct Id<T: ?Sized> {
     label: SmolStr,
     snowflake: SnowflakeId,
     pretty: SmolStr, // todo: convert into [char; N] form to support Cpy semantics
     marker: PhantomData<T>,
 }
 
-impl<T> Id<T> {
+impl<T: ?Sized> Id<T> {
     pub fn new<C: Codec>(
         label: impl AsRef<str>, snowflake: impl Into<SnowflakeId>, prettifier: &IdPrettifier<C>,
     ) -> Self {
@@ -73,7 +73,12 @@ impl<T> Id<T> {
     }
 }
 
-impl<T> Clone for Id<T> {
+#[allow(unsafe_code)]
+unsafe impl<T: ?Sized> Send for Id<T> {}
+#[allow(unsafe_code)]
+unsafe impl<T: ?Sized> Sync for Id<T> {}
+
+impl<T: ?Sized> Clone for Id<T> {
     fn clone(&self) -> Self {
         Self {
             label: self.label.clone(),
@@ -84,7 +89,7 @@ impl<T> Clone for Id<T> {
     }
 }
 
-impl<T> fmt::Debug for Id<T> {
+impl<T: ?Sized> fmt::Debug for Id<T> {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         if f.alternate() {
             f.debug_struct("Id")
@@ -100,7 +105,7 @@ impl<T> fmt::Debug for Id<T> {
     }
 }
 
-impl<T> fmt::Display for Id<T> {
+impl<T: ?Sized> fmt::Display for Id<T> {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         if f.alternate() {
             write!(f, "{}", self.snowflake)
@@ -110,51 +115,51 @@ impl<T> fmt::Display for Id<T> {
     }
 }
 
-impl<T> From<Id<T>> for SnowflakeId {
+impl<T: ?Sized> From<Id<T>> for SnowflakeId {
     fn from(id: Id<T>) -> Self {
         id.snowflake
     }
 }
 
-impl<T> From<Id<T>> for i64 {
+impl<T: ?Sized> From<Id<T>> for i64 {
     fn from(id: Id<T>) -> Self {
         id.snowflake.into()
     }
 }
 
-impl<T> From<Id<T>> for String {
+impl<T: ?Sized> From<Id<T>> for String {
     fn from(id: Id<T>) -> Self {
         id.pretty.to_string()
     }
 }
 
-impl<T> PartialEq for Id<T> {
+impl<T: ?Sized> PartialEq for Id<T> {
     fn eq(&self, other: &Self) -> bool {
         self.snowflake == other.snowflake
     }
 }
 
-impl<T> Eq for Id<T> {}
+impl<T: ?Sized> Eq for Id<T> {}
 
-impl<T> Ord for Id<T> {
+impl<T: ?Sized> Ord for Id<T> {
     fn cmp(&self, other: &Self) -> Ordering {
         self.snowflake.cmp(&other.snowflake)
     }
 }
 
-impl<T> PartialOrd for Id<T> {
+impl<T: ?Sized> PartialOrd for Id<T> {
     fn partial_cmp(&self, other: &Self) -> Option<Ordering> {
         Some(self.cmp(other))
     }
 }
 
-impl<T> Hash for Id<T> {
+impl<T: ?Sized> Hash for Id<T> {
     fn hash<H: Hasher>(&self, state: &mut H) {
         self.snowflake.hash(state);
     }
 }
 
-impl<T> Serialize for Id<T> {
+impl<T: ?Sized> Serialize for Id<T> {
     fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
     where
         S: Serializer,
@@ -166,7 +171,7 @@ impl<T> Serialize for Id<T> {
     }
 }
 
-impl<'de, T: Label> Deserialize<'de> for Id<T> {
+impl<'de, T: Label + ?Sized> Deserialize<'de> for Id<T> {
     fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
     where
         D: Deserializer<'de>,
@@ -206,17 +211,17 @@ impl<'de, T: Label> Deserialize<'de> for Id<T> {
             }
         }
 
-        struct IdVisitor<T> {
+        struct IdVisitor<T: ?Sized> {
             marker: PhantomData<T>,
         }
 
-        impl<T> IdVisitor<T> {
+        impl<T: ?Sized> IdVisitor<T> {
             pub const fn new() -> Self {
                 Self { marker: PhantomData }
             }
         }
 
-        impl<'de, T: Label> Visitor<'de> for IdVisitor<T> {
+        impl<'de, T: Label + ?Sized> Visitor<'de> for IdVisitor<T> {
             type Value = Id<T>;
 
             fn expecting(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
@@ -266,5 +271,17 @@ impl<'de, T: Label> Deserialize<'de> for Id<T> {
         }
 
         deserializer.deserialize_struct("Id", &FIELDS, IdVisitor::<T>::new())
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use static_assertions::assert_impl_all;
+
+    #[test]
+    fn test_auto_traits() {
+        assert_impl_all!(Id<u32>: Send, Sync);
+        assert_impl_all!(Id<std::rc::Rc<u32>>: Send, Sync);
     }
 }
