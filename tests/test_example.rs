@@ -19,7 +19,7 @@ struct Zed;
 #[test]
 fn test_present_example_of_usage() {
     // create instance of it
-    let mut generator: LabeledRealtimeIdGenerator<Zed> = PrettyIdGenerator::single_node(IdPrettifier::default());
+    let generator: LabeledRealtimeIdGenerator<Zed> = PrettyIdGenerator::single_node(IdPrettifier::default());
 
     // generate ids
     let actual: Id<Zed> = generator.next_id();

@@ -1,3 +1,4 @@
+use std::cell::RefCell;
 use std::cmp::Ordering;
 use std::fmt;
 use std::hash::{Hash, Hasher};
@@ -85,7 +86,7 @@ impl IdGenerator for LazyGenerator {
 #[derive(Debug, Clone)]
 pub struct SnowflakeIdGenerator<G> {
     machine_node: MachineNode,
-    worker: Worker,
+    worker: RefCell<Worker>,
     marker: PhantomData<G>,
 }
 
@@ -93,7 +94,11 @@ impl<G> Default for SnowflakeIdGenerator<G> {
     fn default() -> Self {
         let machine_node = MachineNode::default();
         let worker = Worker::new(machine_node.machine_id, machine_node.node_id);
-        Self { machine_node, worker, marker: PhantomData }
+        Self {
+            machine_node,
+            worker: RefCell::new(worker),
+            marker: PhantomData,
+        }
     }
 }
 
@@ -104,11 +109,16 @@ impl<G: IdGenerator> SnowflakeIdGenerator<G> {
 
     pub fn distributed(machine_node: MachineNode) -> Self {
         let worker = Worker::new(machine_node.machine_id, machine_node.node_id);
-        Self { machine_node, worker, marker: PhantomData }
+        Self {
+            machine_node,
+            worker: RefCell::new(worker),
+            marker: PhantomData,
+        }
     }
 
-    pub fn next_id(&mut self) -> Id {
-        G::next_id(&mut self.worker)
+    pub fn next_id(&self) -> Id {
+        let mut w = self.worker.borrow_mut();
+        G::next_id(&mut w)
     }
 }
 

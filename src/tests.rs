@@ -81,7 +81,7 @@ mod snowflake {
 
     #[test]
     fn test_snowflake_id_serde() {
-        let mut gen = SnowflakeIdGenerator::<RealTimeGenerator>::default();
+        let gen = SnowflakeIdGenerator::<RealTimeGenerator>::default();
         let id = gen.next_id();
         let id_value: i64 = id.into();
         assert_tokens(&id, &[Token::I64(id_value)]);

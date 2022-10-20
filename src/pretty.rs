@@ -119,7 +119,7 @@ where
         }
     }
 
-    pub fn next_id(&mut self) -> Id<T> {
+    pub fn next_id(&self) -> Id<T> {
         Id::new(self.labeling.label(), self.generator.next_id(), &self.prettifier)
     }
 }

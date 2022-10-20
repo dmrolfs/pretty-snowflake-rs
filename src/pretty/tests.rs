@@ -15,7 +15,7 @@ impl Label for Foo {
 
 #[test]
 fn test_non_label_custom_generator() {
-    let mut gen: PrettyIdGenerator<NonLabelZed, CustomLabeling, LazyGenerator, AlphabetCodec> =
+    let gen: PrettyIdGenerator<NonLabelZed, CustomLabeling, LazyGenerator, AlphabetCodec> =
         PrettyIdGenerator::single_node_labeling(CustomLabeling::new("Zedster"), IdPrettifier::default());
 
     let actual = gen.next_id();
@@ -24,7 +24,7 @@ fn test_non_label_custom_generator() {
 
 #[test]
 fn test_labeled_generator() {
-    let mut gen: PrettyIdGenerator<Foo, CustomLabeling, LazyGenerator, AlphabetCodec> =
+    let gen: PrettyIdGenerator<Foo, CustomLabeling, LazyGenerator, AlphabetCodec> =
         PrettyIdGenerator::single_node(IdPrettifier::default());
 
     let actual = gen.next_id();
@@ -115,7 +115,7 @@ mod id {
 
     #[test]
     fn test_partial_ord() {
-        let mut generator = make_generator::<()>();
+        let generator = make_generator::<()>();
         let a = generator.next_id();
         let b = generator.next_id();
         assert!(a < b);
@@ -123,28 +123,28 @@ mod id {
 
     #[test]
     fn test_display() {
-        let mut generator = make_generator();
+        let generator = make_generator();
         let a: Id<Foo> = generator.next_id();
         assert_eq!(format!("{a}"), a.pretty().to_string());
     }
 
     #[test]
     fn test_alternate_display() {
-        let mut generator = make_generator();
+        let generator = make_generator();
         let a: Id<i64> = generator.next_id();
         assert_eq!(format!("{a:#}"), a.num().to_string());
     }
 
     #[test]
     fn test_debug() {
-        let mut generator = make_generator();
+        let generator = make_generator();
         let a: Id<Foo> = generator.next_id();
         assert_eq!(format!("{a:?}"), format!("Foo::{}", a.pretty()));
     }
 
     #[test]
     fn test_alternate_debug() {
-        let mut generator = make_generator();
+        let generator = make_generator();
         let a: Id<Foo> = generator.next_id();
         assert_eq!(
             format!("{a:#?}"),
@@ -159,7 +159,7 @@ mod id {
 
     #[test]
     fn test_id_cross_conversion() {
-        let mut generator = make_generator();
+        let generator = make_generator();
         let a: Id<String> = generator.next_id();
         let before = format!("{:?}", a);
         assert_eq!(format!("String::{}", a.pretty()), before);
@@ -272,9 +272,9 @@ mod prettifier {
 
     #[test]
     fn test_preserve_id_monotonicity() {
-        let mut real_time = SnowflakeIdGenerator::<RealTimeGenerator>::default();
-        let mut generator = SnowflakeIdGenerator::<Generator>::default();
-        let mut lazy = SnowflakeIdGenerator::<LazyGenerator>::default();
+        let real_time = SnowflakeIdGenerator::<RealTimeGenerator>::default();
+        let generator = SnowflakeIdGenerator::<Generator>::default();
+        let lazy = SnowflakeIdGenerator::<LazyGenerator>::default();
         let prettifier = IdPrettifier::<AlphabetCodec>::default();
 
         let mut real_time_actual: Vec<String> = (1..=100)
@@ -318,7 +318,7 @@ mod prettifier {
 
     #[test]
     fn test_calculate_seed_properly_with_default_settings() {
-        let mut id_generator = SnowflakeIdGenerator::<RealTimeGenerator>::default();
+        let id_generator = SnowflakeIdGenerator::<RealTimeGenerator>::default();
         let prettifier = IdPrettifier::<AlphabetCodec>::default();
         (1..=10_000).into_iter().for_each(|_| {
             let seed = id_generator.next_id();
@@ -329,7 +329,7 @@ mod prettifier {
 
     #[test]
     fn test_calculate_seed_properly_without_leading_zeros() {
-        let mut id_generator = SnowflakeIdGenerator::<RealTimeGenerator>::default();
+        let id_generator = SnowflakeIdGenerator::<RealTimeGenerator>::default();
         let prettifier = IdPrettifier {
             leading_zeros: false,
             ..IdPrettifier::<AlphabetCodec>::default()
@@ -354,7 +354,7 @@ mod prettifier {
 
     #[test]
     fn test_calculate_seed_properly_smaller_parts_and_short_alphabet() {
-        let mut id_generator = SnowflakeIdGenerator::<RealTimeGenerator>::default();
+        let id_generator = SnowflakeIdGenerator::<RealTimeGenerator>::default();
         let prettifier = IdPrettifier {
             encoder: AlphabetCodec::new(Alphabet::new("ABC")),
             parts_size: 2,
