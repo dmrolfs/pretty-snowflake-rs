@@ -15,7 +15,7 @@ separator or don't use leading zeros to provide fixed length.
 Examples
 ```rust
     // create instance of it
-    let mut generator = PrettyIdGenerator::<RealTimeGenerator, AlphabetCodec>::single_node(IdPrettifier::default());
+    let generator = PrettyIdGenerator::<RealTimeGenerator, AlphabetCodec>::single_node(IdPrettifier::default());
 
     // generate ids
     let actual = generator.next_id();
