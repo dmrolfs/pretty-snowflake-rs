@@ -1,9 +1,9 @@
-use std::cell::RefCell;
 use std::cmp::Ordering;
 use std::fmt;
 use std::hash::{Hash, Hasher};
 use std::marker::PhantomData;
 use std::str::FromStr;
+use std::sync::{Arc, Mutex};
 
 use serde::{Deserialize, Serialize};
 use snowflake::SnowflakeIdGenerator as Worker;
@@ -86,7 +86,7 @@ impl IdGenerator for LazyGenerator {
 #[derive(Debug, Clone)]
 pub struct SnowflakeIdGenerator<G> {
     machine_node: MachineNode,
-    worker: RefCell<Worker>,
+    worker: Arc<Mutex<Worker>>,
     marker: PhantomData<G>,
 }
 
@@ -96,7 +96,7 @@ impl<G> Default for SnowflakeIdGenerator<G> {
         let worker = Worker::new(machine_node.machine_id, machine_node.node_id);
         Self {
             machine_node,
-            worker: RefCell::new(worker),
+            worker: Arc::new(Mutex::new(worker)),
             marker: PhantomData,
         }
     }
@@ -111,13 +111,16 @@ impl<G: IdGenerator> SnowflakeIdGenerator<G> {
         let worker = Worker::new(machine_node.machine_id, machine_node.node_id);
         Self {
             machine_node,
-            worker: RefCell::new(worker),
+            worker: Arc::new(Mutex::new(worker)),
             marker: PhantomData,
         }
     }
 
     pub fn next_id(&self) -> Id {
-        let mut w = self.worker.borrow_mut();
+        let mut w = self
+            .worker
+            .lock()
+            .expect("pretty snowflake generator lock already held by *this* thread.");
         G::next_id(&mut w)
     }
 }
