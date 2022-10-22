@@ -71,6 +71,15 @@ impl<T: ?Sized> Id<T> {
     pub fn num(&self) -> i64 {
         self.snowflake.into()
     }
+
+    #[inline]
+    pub fn write_pretty_label(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        if self.label.is_empty() {
+            f.write_str(self.pretty.as_str())
+        } else {
+            f.write_fmt(format_args!("{}::{}", self.label, self.pretty))
+        }
+    }
 }
 
 #[allow(unsafe_code)]
@@ -97,10 +106,8 @@ impl<T: ?Sized> fmt::Debug for Id<T> {
                 .field("snowflake", &self.snowflake)
                 .field("pretty", &self.pretty)
                 .finish()
-        } else if self.label.is_empty() {
-            f.write_str(self.pretty.as_str())
         } else {
-            f.write_fmt(format_args!("{}::{}", self.label, self.pretty))
+            self.write_pretty_label(f)
         }
     }
 }
@@ -110,7 +117,7 @@ impl<T: ?Sized> fmt::Display for Id<T> {
         if f.alternate() {
             write!(f, "{}", self.snowflake)
         } else {
-            write!(f, "{}", self.pretty)
+            self.write_pretty_label(f)
         }
     }
 }

@@ -1,6 +1,6 @@
 [package]
 name = "pretty-snowflake"
-version = "1.5.0"
+version = "1.5.1"
 description = """\
 Rust port of SoftwareMill/scala-id-generator. Generate unique ids. A default generator is provided,\
 based on Twitter Snowflake, which generates time-based ids. Besides that library provide \

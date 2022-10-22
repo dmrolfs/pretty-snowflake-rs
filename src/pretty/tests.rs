@@ -19,7 +19,7 @@ fn test_non_label_custom_generator() {
         PrettyIdGenerator::single_node_labeling(CustomLabeling::new("Zedster"), IdPrettifier::default());
 
     let actual = gen.next_id();
-    assert_eq!(format!("{actual:?}"), format!("Zedster::{actual}"))
+    assert_eq!(format!("{actual:?}"), format!("Zedster::{}", actual.pretty()))
 }
 
 #[test]
@@ -28,7 +28,7 @@ fn test_labeled_generator() {
         PrettyIdGenerator::single_node(IdPrettifier::default());
 
     let actual = gen.next_id();
-    assert_eq!(format!("{actual:?}"), format!("MyFooferNut::{actual}"))
+    assert_eq!(format!("{actual:?}"), format!("MyFooferNut::{}", actual.pretty()))
 }
 
 mod codec {
@@ -125,7 +125,7 @@ mod id {
     fn test_display() {
         let generator = make_generator();
         let a: Id<Foo> = generator.next_id();
-        assert_eq!(format!("{a}"), a.pretty().to_string());
+        assert_eq!(format!("{a}"), format!("Foo::{}", a.pretty()));
     }
 
     #[test]
