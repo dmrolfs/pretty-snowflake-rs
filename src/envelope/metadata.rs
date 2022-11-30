@@ -1,16 +1,17 @@
+#[cfg(feature = "functional")]
+use frunk::{Monoid, Semigroup};
+
 use crate::envelope::{Correlation, ReceivedAt};
 use crate::{generator, Id, Label, Labeling};
-use frunk::{Monoid, Semigroup};
 use iso8601_timestamp::Timestamp;
 use once_cell::sync::Lazy;
+use serde::{Deserialize, Serialize};
 use std::cmp::Ordering;
 use std::collections::HashMap;
 use std::fmt;
 use std::ops::Deref;
 use std::str::FromStr;
 use std::string::ToString;
-
-use serde::{Deserialize, Serialize};
 
 pub static CORRELATION_SNOWFLAKE_ID_KEY: Lazy<String> = Lazy::new(|| "correlation_snowflake_id".to_string());
 pub static CORRELATION_PRETTY_ID_KEY: Lazy<String> = Lazy::new(|| "correlation_pretty_id".to_string());
