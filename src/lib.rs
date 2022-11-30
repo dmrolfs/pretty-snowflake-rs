@@ -15,13 +15,20 @@ extern crate pretty_snowflake_derive;
 #[doc(hidden)]
 pub use pretty_snowflake_derive::*;
 
+use serde::{Deserialize, Serialize};
+use validator::{Validate, ValidationErrors};
+
 #[cfg(test)]
 mod tests;
 
+pub mod generator;
 mod label;
 mod labeling;
 mod pretty;
 mod snowflake;
+
+#[cfg(feature = "envelope")]
+pub mod envelope;
 
 use std::cmp::Ordering;
 use std::fmt;
@@ -29,8 +36,6 @@ use std::fmt;
 pub use label::Label;
 pub use labeling::{CustomLabeling, Labeling, MakeLabeling, NoLabeling};
 pub use pretty::{Alphabet, AlphabetCodec, Codec, Id, IdPrettifier, PrettyIdGenerator};
-use serde::{Deserialize, Serialize};
-use validator::{Validate, ValidationErrors};
 
 pub use crate::snowflake::{Generator, IdGenerator, LazyGenerator, RealTimeGenerator, SnowflakeIdGenerator};
 

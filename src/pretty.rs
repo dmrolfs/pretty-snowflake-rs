@@ -1,3 +1,8 @@
+pub use codec::{Alphabet, AlphabetCodec, Codec};
+pub use id::Id;
+pub use prettifier::IdPrettifier;
+use std::marker::PhantomData;
+
 #[cfg(test)]
 mod tests;
 
@@ -5,11 +10,6 @@ mod codec;
 mod damm;
 mod id;
 mod prettifier;
-
-pub use codec::{Alphabet, AlphabetCodec, Codec};
-pub use id::Id;
-pub use prettifier::IdPrettifier;
-use serde::__private::PhantomData;
 
 use crate::{
     Generator, IdGenerator, Label, Labeling, LazyGenerator, MachineNode, RealTimeGenerator, SnowflakeIdGenerator,
@@ -90,6 +90,10 @@ where
             labeling,
             marker: PhantomData,
         }
+    }
+
+    pub const fn prettifier(&self) -> &IdPrettifier<C> {
+        &self.prettifier
     }
 }
 

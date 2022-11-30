@@ -1,12 +1,12 @@
+use serde::{Deserialize, Serialize};
+
+use snowflake::SnowflakeIdGenerator as Worker;
 use std::cmp::Ordering;
 use std::fmt;
 use std::hash::{Hash, Hasher};
 use std::marker::PhantomData;
 use std::str::FromStr;
 use std::sync::{Arc, Mutex};
-
-use serde::{Deserialize, Serialize};
-use snowflake::SnowflakeIdGenerator as Worker;
 
 use crate::MachineNode;
 

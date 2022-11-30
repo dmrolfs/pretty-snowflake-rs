@@ -1,13 +1,13 @@
+use serde::de::{self, Deserialize, MapAccess, SeqAccess, Visitor};
+use serde::ser::{Serialize, SerializeStruct, Serializer};
+use serde::Deserializer;
+
+use pretty_type_name::pretty_type_name;
+use smol_str::SmolStr;
 use std::cmp::Ordering;
 use std::fmt;
 use std::hash::{Hash, Hasher};
 use std::marker::PhantomData;
-
-use pretty_type_name::pretty_type_name;
-use serde::de::{self, Deserialize, MapAccess, SeqAccess, Visitor};
-use serde::ser::{Serialize, SerializeStruct, Serializer};
-use serde::Deserializer;
-use smol_str::SmolStr;
 
 use crate::pretty::codec::Codec;
 use crate::pretty::prettifier::IdPrettifier;
